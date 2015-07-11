@@ -207,18 +207,40 @@ class MovieRecorder: NSObject {
             
             autoreleasepool {
                 var error: NSError? = nil
-                // AVAssetWriter will not write over an existing file.
-                NSFileManager.defaultManager().removeItemAtURL(self._URL, error: nil)
+                do {
+                    // AVAssetWriter will not write over an existing file.
+                    try NSFileManager.defaultManager().removeItemAtURL(self._URL)
+                } catch _ {
+                }
                 
-                self._assetWriter = AVAssetWriter(URL: self._URL, fileType: AVFileTypeQuickTimeMovie, error: &error)
+                do {
+                    self._assetWriter = try AVAssetWriter(URL: self._URL, fileType: AVFileTypeQuickTimeMovie)
+                } catch let error1 as NSError {
+                    error = error1
+                    self._assetWriter = nil
+                } catch {
+                    fatalError()
+                }
                 
                 // Create and add inputs
                 if error == nil && self._videoTrackSourceFormatDescription != nil {
-                    self.setupAssetWriterVideoInput(self._videoTrackSourceFormatDescription!, transform: self._videoTrackTransform, error: &error)
+                    do {
+                        try self.setupAssetWriterVideoInput(self._videoTrackSourceFormatDescription!, transform: self._videoTrackTransform)
+                    } catch let error1 as NSError {
+                        error = error1
+                    } catch {
+                        fatalError()
+                    }
                 }
                 
                 if error == nil && self._audioTrackSourceFormatDescription != nil {
-                    self.setupAssetWriterAudioInput(self._audioTrackSourceFormatDescription!, error: &error)
+                    do {
+                        try self.setupAssetWriterAudioInput(self._audioTrackSourceFormatDescription!)
+                    } catch let error1 as NSError {
+                        error = error1
+                    } catch {
+                        fatalError()
+                    }
                 }
                 
                 if error == nil {
@@ -244,7 +266,6 @@ class MovieRecorder: NSObject {
     }
     
     func appendVideoPixelBuffer(pixelBuffer: CVPixelBuffer, withPresentationTime presentationTime: CMTime) {
-        var umSampleBuffer: Unmanaged<CMSampleBuffer>? = nil
         var sampleBuffer: CMSampleBuffer? = nil
         
         var timingInfo: CMSampleTimingInfo = CMSampleTimingInfo()
@@ -252,9 +273,9 @@ class MovieRecorder: NSObject {
         timingInfo.decodeTimeStamp = kCMTimeInvalid
         timingInfo.presentationTimeStamp = presentationTime
         
-        let err = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, nil, nil, _videoTrackSourceFormatDescription, &timingInfo, &umSampleBuffer)
-        if umSampleBuffer != nil {
-            self.appendSampleBuffer(umSampleBuffer!.takeRetainedValue(), ofMediaType: AVMediaTypeVideo)
+        let err = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, nil, nil, _videoTrackSourceFormatDescription!, &timingInfo, &sampleBuffer)
+        if sampleBuffer != nil {
+            self.appendSampleBuffer(sampleBuffer!, ofMediaType: AVMediaTypeVideo)
         } else {
             let exceptionReason = "sample buffer create failed (\(err))"
             fatalError(exceptionReason)
@@ -387,7 +408,10 @@ class MovieRecorder: NSObject {
                 dispatch_async(_writingQueue){
                     self.teardownAssetWriterAndInputs()
                     if newStatus == .Failed {
-                        NSFileManager.defaultManager().removeItemAtURL(self._URL, error: nil)
+                        do {
+                            try NSFileManager.defaultManager().removeItemAtURL(self._URL)
+                        } catch _ {
+                        }
                     }
                 }
                 
@@ -423,14 +447,14 @@ class MovieRecorder: NSObject {
     }
     
     
-    private func setupAssetWriterAudioInput(audioFormatDescription: CMFormatDescription, error errorOut: NSErrorPointer) -> Bool {
+    private func setupAssetWriterAudioInput(audioFormatDescription: CMFormatDescription) throws {
         let supportsFormatHint = AVAssetWriterInput.instancesRespondToSelector("initWithMediaType:outputSettings:sourceFormatHint:") // supported on iOS 6 and later
         
-        let audioCompressionSettings: [NSObject: AnyObject]
+        let audioCompressionSettings: [String : AnyObject]
         
         if supportsFormatHint {
             audioCompressionSettings = [
-                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVFormatIDKey: kAudioFormatMPEG4AAC.l,
             ]
         } else {
             let currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(audioFormatDescription)
@@ -446,7 +470,7 @@ class MovieRecorder: NSObject {
                 currentChannelLayoutData = NSData()
             }
             audioCompressionSettings = [
-                AVFormatIDKey: kAudioFormatMPEG4AAC,
+                AVFormatIDKey: kAudioFormatMPEG4AAC.l,
                 AVSampleRateKey: currentASBD.memory.mSampleRate,
                 AVEncoderBitRatePerChannelKey: 64000,
                 AVNumberOfChannelsKey: Int(currentASBD.memory.mChannelsPerFrame),
@@ -460,25 +484,17 @@ class MovieRecorder: NSObject {
                 _audioInput = AVAssetWriterInput(mediaType: AVMediaTypeAudio, outputSettings: audioCompressionSettings)
             }
             _audioInput!.expectsMediaDataInRealTime = true
-            if _assetWriter?.canAddInput(_audioInput) ?? false {
-                _assetWriter!.addInput(_audioInput)
+            if _assetWriter?.canAddInput(_audioInput!) ?? false {
+                _assetWriter!.addInput(_audioInput!)
             } else {
-                if errorOut != nil {
-                    errorOut.memory = self.dynamicType.cannotSetupInputError()
-                }
-                return false
+                throw self.dynamicType.cannotSetupInputError()
             }
         } else {
-            if errorOut != nil {
-                errorOut.memory = self.dynamicType.cannotSetupInputError()
-            }
-            return false
+            throw self.dynamicType.cannotSetupInputError()
         }
-        
-        return true
     }
     
-    private func setupAssetWriterVideoInput(videoFormatDescription: CMFormatDescription, transform: CGAffineTransform, error errorOut: NSErrorPointer) -> Bool {
+    private func setupAssetWriterVideoInput(videoFormatDescription: CMFormatDescription, transform: CGAffineTransform) throws {
         let supportsFormatHint = AVAssetWriterInput.instancesRespondToSelector("initWithMediaType:outputSettings:sourceFormatHint:") // supported on iOS 6 and later
         
         var bitsPerPixel: Float
@@ -500,7 +516,7 @@ class MovieRecorder: NSObject {
             AVVideoMaxKeyFrameIntervalKey: 30,
         ]
         
-        let videoCompressionSettings: [NSObject: AnyObject] = [
+        let videoCompressionSettings: [String : AnyObject] = [
             AVVideoCodecKey: AVVideoCodecH264,
             AVVideoWidthKey: Int(dimensions.width),
             AVVideoHeightKey: Int(dimensions.height),
@@ -515,22 +531,14 @@ class MovieRecorder: NSObject {
             }
             _videoInput!.expectsMediaDataInRealTime = true
             _videoInput!.transform = transform
-            if _assetWriter?.canAddInput(_videoInput) ?? false {
-                _assetWriter!.addInput(_videoInput)
+            if _assetWriter?.canAddInput(_videoInput!) ?? false {
+                _assetWriter!.addInput(_videoInput!)
             } else {
-                if errorOut != nil {
-                    errorOut.memory = self.dynamicType.cannotSetupInputError()
-                }
-                return false
+                throw self.dynamicType.cannotSetupInputError()
             }
         } else {
-            if errorOut != nil {
-                errorOut.memory = self.dynamicType.cannotSetupInputError()
-            }
-            return false
+            throw self.dynamicType.cannotSetupInputError()
         }
-        
-        return true
     }
     
     private class func cannotSetupInputError() -> NSError {

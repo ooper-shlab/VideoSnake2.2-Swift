@@ -132,8 +132,6 @@ private func angleOffsetFromPortraitOrientationToOrientation(orientation: AVCapt
         angle = -M_PI_2.g
     case .LandscapeLeft:
         angle = M_PI_2.g
-    default:
-        break
     }
     
     return angle
@@ -183,7 +181,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     override init() {
         recordingOrientation = AVCaptureVideoOrientation(rawValue: UIDeviceOrientation.Portrait.rawValue)!
         
-        _recordingURL = NSURL(fileURLWithPath: String.pathWithComponents([NSTemporaryDirectory(), "Movie.MOV"]))!
+        _recordingURL = NSURL(fileURLWithPath: String.pathWithComponents([NSTemporaryDirectory(), "Movie.MOV"]))
         
         _sessionQueue = dispatch_queue_create("com.apple.sample.sessionmanager.capture", DISPATCH_QUEUE_SERIAL)
         
@@ -300,13 +298,18 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
             fatalError("Video capturing is not available for this device")
         }
         _videoDevice = videoDevice
-        let videoIn = AVCaptureDeviceInput(device: videoDevice, error: nil)
+        let videoIn: AVCaptureDeviceInput!
+        do {
+            videoIn = try AVCaptureDeviceInput(device: videoDevice)
+        } catch _ {
+            videoIn = nil
+        }
         if _captureSession!.canAddInput(videoIn) {
             _captureSession!.addInput(videoIn)
         }
         
         let videoOut = AVCaptureVideoDataOutput()
-        videoOut.videoSettings = [kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA]
+        videoOut.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA.l]
         videoOut.setSampleBufferDelegate(self, queue: _videoDataOutputQueue)
         
         // VideoSnake records videos and we prefer not to have any dropped frames in the video recording.
@@ -334,13 +337,13 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         }
         frameDuration = CMTimeMake(1, frameRate.i)
         
-        var error: NSError? = nil
-        if videoDevice!.lockForConfiguration(&error) {
+        do {
+            try videoDevice!.lockForConfiguration()
             videoDevice!.activeVideoMaxFrameDuration = frameDuration
             videoDevice!.activeVideoMinFrameDuration = frameDuration
             videoDevice!.unlockForConfiguration()
-        } else {
-            NSLog("videoDevice lockForConfiguration returned error %@", error!)
+        } catch let error as NSError {
+            NSLog("videoDevice lockForConfiguration returned error %@", error)
         }
         
         self.videoOrientation = _videoConnection!.videoOrientation
@@ -571,7 +574,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         if connection === _videoConnection {
             if self.outputVideoFormatDescription == nil {
-                self.setupVideoPipelineWithInputFormatDescription(formatDescription)
+                self.setupVideoPipelineWithInputFormatDescription(formatDescription!)
             }
             
             self.motionSynchronizer.appendSampleBufferForSynchronization(sampleBuffer)
@@ -597,7 +600,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         synchronized(_renderer) {
             if _renderingEnabled {
                 let sourcePixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-                renderedPixelBuffer = _renderer.copyRenderedPixelBuffer(sourcePixelBuffer, motion: motion)
+                renderedPixelBuffer = _renderer.copyRenderedPixelBuffer(sourcePixelBuffer!, motion: motion)
             } else {
                 return
             }
@@ -693,7 +696,10 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         let library = ALAssetsLibrary()
         library.writeVideoAtPathToSavedPhotosAlbum(_recordingURL) {assetURL, error in
             
-            NSFileManager.defaultManager().removeItemAtURL(self._recordingURL, error: nil)
+            do {
+                try NSFileManager.defaultManager().removeItemAtURL(self._recordingURL)
+            } catch _ {
+            }
             
             synchronized(self) {
                 if self._recordingStatus != .StoppingRecording {

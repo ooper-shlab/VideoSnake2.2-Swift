@@ -149,13 +149,13 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
     override func shouldAutorotate() -> Bool {
         return false
     }
-    override func supportedInterfaceOrientations() -> Int {
-        return UIInterfaceOrientation.Portrait.rawValue
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.Portrait
     }
     
     //MARK: - UI
     
-    @IBAction func toggleRecording(AnyObject) {
+    @IBAction func toggleRecording(_: AnyObject) {
         if _recording {
             self.videoSnakeSessionManager.stopRecording()
         } else {
@@ -190,7 +190,7 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
     private func setupPreviewView() {
         // Set up GL view
         self.previewView = OpenGLPixelBufferView(frame: CGRectZero)
-        self.previewView!.autoresizingMask = .FlexibleHeight | .FlexibleWidth
+        self.previewView!.autoresizingMask = [.FlexibleHeight, .FlexibleWidth]
         
         let currentInterfaceOrientation = UIApplication.sharedApplication().statusBarOrientation
         self.previewView!.transform = self.videoSnakeSessionManager.transformFromVideoBufferOrientationToOrientation(AVCaptureVideoOrientation(rawValue: currentInterfaceOrientation.rawValue)!, withAutoMirroring: true) // Front camera preview should be mirrored
@@ -220,15 +220,15 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
     }
     
     func showError(error: NSError) {
-        if NSClassFromString("UIAlertController") == nil {
+        if #available(iOS 8.0, *) {
+            let alert = UIAlertController(title: error.localizedDescription, message: error.localizedFailureReason, preferredStyle: .Alert)
+            self.presentViewController(alert, animated: true, completion: {})
+        } else {
             let alertView = UIAlertView(title: error.localizedDescription,
                 message: error.localizedFailureReason,
                 delegate: nil,
                 cancelButtonTitle: "OK")
             alertView.show()
-        } else {
-            let alert = UIAlertController(title: error.localizedDescription, message: error.localizedFailureReason, preferredStyle: .Alert)
-            self.presentViewController(alert, animated: true, completion: {})
         }
     }
     

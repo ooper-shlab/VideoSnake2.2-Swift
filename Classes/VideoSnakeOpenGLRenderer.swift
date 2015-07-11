@@ -80,9 +80,7 @@ private func CreatePixelBufferPool(width: Int32, height: Int32, pixelFormat: OST
         kCVPixelBufferPoolMinimumBufferCountKey: Int(maxBufferCount),
     ]
     
-    var umOutputPool: Unmanaged<CVPixelBufferPool>? = nil
-    CVPixelBufferPoolCreate(kCFAllocatorDefault, pixelBufferPoolOptions, sourcePixelBufferOptions, &umOutputPool)
-    outputPool = umOutputPool?.takeRetainedValue()
+    CVPixelBufferPoolCreate(kCFAllocatorDefault, pixelBufferPoolOptions, sourcePixelBufferOptions, &outputPool)
     
     return outputPool
 }
@@ -98,14 +96,12 @@ private func PreallocatePixelBuffersInPool(pool: CVPixelBufferPool, auxAttribute
     var pixelBuffers: [CVPixelBuffer] = []
     while true {
         var pixelBuffer: CVPixelBuffer? = nil
-        var umPixelBuffer: Unmanaged<CVPixelBuffer>? = nil
-        let err = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, pool, auxAttributes, &umPixelBuffer)
+        let err = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, pool, auxAttributes, &pixelBuffer)
         
-        if err == kCVReturnWouldExceedAllocationThreshold.value {
+        if err == kCVReturnWouldExceedAllocationThreshold {
             break
         }
         assert(err == noErr)
-        pixelBuffer = umPixelBuffer!.takeRetainedValue()
         
         pixelBuffers.append(pixelBuffer!)
     }
@@ -136,7 +132,12 @@ class VideoSnakeOpenGLRenderer: NSObject {
     class func readFile(name: String) -> String? {
         
         let path = NSBundle.mainBundle().pathForResource(name, ofType: nil)
-        let source = String(contentsOfFile: path!, encoding: NSUTF8StringEncoding)
+        let source: String?
+        do {
+            source = try String(contentsOfFile: path!, encoding: NSUTF8StringEncoding)
+        } catch _ {
+            source = nil
+        }
         return source
     }
     
@@ -162,7 +163,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
     private func initializeBuffersWithOutputDimensions(outputDimensions: CMVideoDimensions, retainedBufferCountHint clientRetainedBufferCountHint: size_t) -> Bool {
         var success = true
         
-        var oldContext = EAGLContext.currentContext()
+        let oldContext = EAGLContext.currentContext()
         if oldContext !== _oglContext {
             if !EAGLContext.setCurrentContext(_oglContext) {
                 fatalError("Problem with OpenGL context")
@@ -174,31 +175,27 @@ class VideoSnakeOpenGLRenderer: NSObject {
         glGenFramebuffers(1, &_offscreenBufferHandle)
         glBindFramebuffer(GL_FRAMEBUFFER.ui, _offscreenBufferHandle)
         
-        bail: do {
-            var umTextureCache: Unmanaged<CVOpenGLESTextureCache>? = nil
-            var err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, _oglContext, nil, &umTextureCache)
+        bail: repeat {
+            var err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, _oglContext, nil, &_textureCache)
             if err != 0 {
                 fatalError("Error at CVOpenGLESTextureCacheCreate \(err)")
             }
-            _textureCache = umTextureCache!.takeRetainedValue()
             
-            var umRenderTextureCache: Unmanaged<CVOpenGLESTextureCache>? = nil
-            err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, _oglContext, nil, &umRenderTextureCache)
+            err = CVOpenGLESTextureCacheCreate(kCFAllocatorDefault, nil, _oglContext, nil, &_renderTextureCache)
             if err != 0 {
                 fatalError("Error at CVOpenGLESTextureCacheCreate \(err)")
             }
-            _renderTextureCache = umRenderTextureCache!.takeRetainedValue()
             
             // Load vertex and fragment shaders
-            var attribLocation: [GLuint] = [
+            let attribLocation: [GLuint] = [
                 ATTRIB_VERTEX.ui, ATTRIB_TEXTUREPOSITON.ui,
             ]
-            var attribName: [String] = [
+            let attribName: [String] = [
                 "position", "texturecoordinate",
             ]
             
-            var videoSnakeVertSrc = VideoSnakeOpenGLRenderer.readFile("videoSnake.vsh")!
-            var videoSnakeFragSrc = VideoSnakeOpenGLRenderer.readFile("videoSnake.fsh")!
+            let videoSnakeVertSrc = VideoSnakeOpenGLRenderer.readFile("videoSnake.vsh")!
+            let videoSnakeFragSrc = VideoSnakeOpenGLRenderer.readFile("videoSnake.fsh")!
             
             // videoSnake shader program
             glue.createProgram(videoSnakeVertSrc, videoSnakeFragSrc,
@@ -216,9 +213,9 @@ class VideoSnakeOpenGLRenderer: NSObject {
             _frame = glue.getUniformLocation(_program, "videoframe")
             
             // Because we will retain one buffer in _backFramePixelBuffer we increment the client's retained buffer count hint by 1
-            var maxRetainedBufferCount = clientRetainedBufferCountHint + 1
+            let maxRetainedBufferCount = clientRetainedBufferCountHint + 1
             
-            _bufferPool = CreatePixelBufferPool(outputDimensions.width, outputDimensions.height, OSType(kCVPixelFormatType_32BGRA), Int32(maxRetainedBufferCount))
+            _bufferPool = CreatePixelBufferPool(outputDimensions.width, height: outputDimensions.height, pixelFormat: OSType(kCVPixelFormatType_32BGRA), maxBufferCount: Int32(maxRetainedBufferCount))
             if _bufferPool == nil {
                 NSLog("Problem initializing a buffer pool.")
                 success = false
@@ -226,21 +223,17 @@ class VideoSnakeOpenGLRenderer: NSObject {
             }
             
             _bufferPoolAuxAttributes = CreatePixelBufferPoolAuxAttributes(Int32(maxRetainedBufferCount))
-            PreallocatePixelBuffersInPool(_bufferPool!, _bufferPoolAuxAttributes!)
+            PreallocatePixelBuffersInPool(_bufferPool!, auxAttributes: _bufferPoolAuxAttributes!)
             
             var outputFormatDescription: CMFormatDescription? = nil
             var testPixelBuffer: CVPixelBuffer? = nil
-            var umTestPixelBuffer: Unmanaged<CVPixelBuffer>? = nil
-            CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, _bufferPool, _bufferPoolAuxAttributes, &umTestPixelBuffer)
-            if umTestPixelBuffer == nil {
+            CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, _bufferPool!, _bufferPoolAuxAttributes, &testPixelBuffer)
+            if testPixelBuffer == nil {
                 NSLog("Problem creating a pixel buffer.")
                 success = false
                 break bail
             }
-            testPixelBuffer = umTestPixelBuffer!.takeRetainedValue()
-            var umOutputFormatDescription: Unmanaged<CMFormatDescription>? = nil
-            CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, testPixelBuffer, &umOutputFormatDescription)
-            outputFormatDescription = umOutputFormatDescription!.takeRetainedValue()
+            CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, testPixelBuffer!, &outputFormatDescription)
             self.outputFormatDescription = outputFormatDescription
             testPixelBuffer = nil
             
@@ -321,7 +314,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
         }
         
         let srcDimensions = CMVideoDimensions(width: Int32(CVPixelBufferGetWidth(pixelBuffer)), height: Int32(CVPixelBufferGetHeight(pixelBuffer)))
-        let dstDimensions = CMVideoFormatDescriptionGetDimensions(outputFormatDescription)
+        let dstDimensions = CMVideoFormatDescriptionGetDimensions(outputFormatDescription!)
         if srcDimensions.width != dstDimensions.width ||
             srcDimensions.height != dstDimensions.height {
                 fatalError("Invalid pixel buffer dimensions")
@@ -355,10 +348,9 @@ class VideoSnakeOpenGLRenderer: NSObject {
         _velocityDeltaY += (motion?.userAcceleration.y ?? 0.0) * timeDelta
         _velocityDeltaY *= kMotionDampingFactor
         
-        bail: do {
-            var umSrcTexture: Unmanaged<CVOpenGLESTexture>? = nil
+        bail: repeat {
             err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-                _textureCache,
+                _textureCache!,
                 pixelBuffer,
                 nil,
                 GL_TEXTURE_2D.ui,
@@ -368,34 +360,30 @@ class VideoSnakeOpenGLRenderer: NSObject {
                 GL_BGRA.ui,
                 GL_UNSIGNED_BYTE.ui,
                 0,
-                &umSrcTexture)
-            if umSrcTexture == nil || err != 0 {
+                &srcTexture)
+            if srcTexture == nil || err != 0 {
                 NSLog("Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err)
                 break bail
             }
-            srcTexture = umSrcTexture!.takeRetainedValue()
             
-            var umDstPixelBuffer: Unmanaged<CVPixelBuffer>? = nil
-            err = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, _bufferPool, _bufferPoolAuxAttributes, &umDstPixelBuffer)
-            if err == kCVReturnWouldExceedAllocationThreshold.value {
+            err = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, _bufferPool!, _bufferPoolAuxAttributes, &dstPixelBuffer)
+            if err == kCVReturnWouldExceedAllocationThreshold {
                 // Flush the texture cache to potentially release the retained buffers and try again to create a pixel buffer
-                CVOpenGLESTextureCacheFlush(_renderTextureCache, 0)
-                err = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, _bufferPool, _bufferPoolAuxAttributes, &umDstPixelBuffer)
+                CVOpenGLESTextureCacheFlush(_renderTextureCache!, 0)
+                err = CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(kCFAllocatorDefault, _bufferPool!, _bufferPoolAuxAttributes, &dstPixelBuffer)
             }
             if err != 0 {
-                if err == kCVReturnWouldExceedAllocationThreshold.value {
+                if err == kCVReturnWouldExceedAllocationThreshold {
                     NSLog("Pool is out of buffers, dropping frame")
                 } else {
                     NSLog("Error at CVPixelBufferPoolCreatePixelBuffer %d", err)
                 }
                 break bail
             }
-            dstPixelBuffer = umDstPixelBuffer!.takeRetainedValue()
             
-            var umDstTexture: Unmanaged<CVOpenGLESTexture>? = nil
             err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-                _renderTextureCache,
-                dstPixelBuffer,
+                _renderTextureCache!,
+                dstPixelBuffer!,
                 nil,
                 GL_TEXTURE_2D.ui,
                 GL_RGBA,
@@ -404,25 +392,24 @@ class VideoSnakeOpenGLRenderer: NSObject {
                 GL_BGRA.ui,
                 GL_UNSIGNED_BYTE.ui,
                 0,
-                &umDstTexture)
+                &dstTexture)
             
-            if umDstTexture == nil || err != 0 {
+            if dstTexture == nil || err != 0 {
                 NSLog("Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err)
                 break bail
             }
-            dstTexture = umDstTexture!.takeRetainedValue()
             
             glBindFramebuffer(GL_FRAMEBUFFER.ui, _offscreenBufferHandle)
             glViewport(0, 0, srcDimensions.width, srcDimensions.height)
             glUseProgram(_program)
             
             glActiveTexture(GL_TEXTURE0.ui)
-            glBindTexture(CVOpenGLESTextureGetTarget(dstTexture), CVOpenGLESTextureGetName(dstTexture))
+            glBindTexture(CVOpenGLESTextureGetTarget(dstTexture!), CVOpenGLESTextureGetName(dstTexture!))
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_MIN_FILTER.ui, GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_MAG_FILTER.ui, GL_LINEAR)
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_S.ui, GL_CLAMP_TO_EDGE)
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_T.ui, GL_CLAMP_TO_EDGE)
-            glFramebufferTexture2D(GL_FRAMEBUFFER.ui, GL_COLOR_ATTACHMENT0.ui, CVOpenGLESTextureGetTarget(dstTexture), CVOpenGLESTextureGetName(dstTexture), 0)
+            glFramebufferTexture2D(GL_FRAMEBUFFER.ui, GL_COLOR_ATTACHMENT0.ui, CVOpenGLESTextureGetTarget(dstTexture!), CVOpenGLESTextureGetName(dstTexture!), 0)
             
             var modelview: [Float] = Array(count: 16, repeatedValue: 0.0)
             var projection: [Float] = Array(count: 16, repeatedValue: 0.0)
@@ -438,10 +425,9 @@ class VideoSnakeOpenGLRenderer: NSObject {
                 let transBack: [Float] = [-_velocityDeltaY.f * motionPixels, -_velocityDeltaX.f * motionPixels * motionMirroring, 0.0]
                 let scaleBack: [Float] = [kBackScaleFactor, kBackScaleFactor, 0.0]
                 
-                var umBackFrameTexture: Unmanaged<CVOpenGLESTexture>? = nil
                 err = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
-                    _renderTextureCache,
-                    _backFramePixelBuffer,
+                    _renderTextureCache!,
+                    _backFramePixelBuffer!,
                     nil,
                     GL_TEXTURE_2D.ui,
                     GL_RGBA,
@@ -450,16 +436,15 @@ class VideoSnakeOpenGLRenderer: NSObject {
                     GL_BGRA.ui,
                     GL_UNSIGNED_BYTE.ui,
                     0,
-                    &umBackFrameTexture)
+                    &backFrameTexture)
                 
-                if umBackFrameTexture == nil || err != 0 {
+                if backFrameTexture == nil || err != 0 {
                     NSLog("Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err)
                     break bail
                 }
-                backFrameTexture = umBackFrameTexture!.takeRetainedValue()
                 
                 glActiveTexture(GL_TEXTURE1.ui)
-                glBindTexture(CVOpenGLESTextureGetTarget(backFrameTexture), CVOpenGLESTextureGetName(backFrameTexture))
+                glBindTexture(CVOpenGLESTextureGetTarget(backFrameTexture!), CVOpenGLESTextureGetName(backFrameTexture!))
                 glUniform1i(_frame, 1)
                 
                 glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_MIN_FILTER.ui, GL_LINEAR)
@@ -489,13 +474,13 @@ class VideoSnakeOpenGLRenderer: NSObject {
                 
                 glDrawArrays(GL_TRIANGLE_STRIP.ui, 0, 4)
                 
-                glBindTexture(CVOpenGLESTextureGetTarget(backFrameTexture), 0)
+                glBindTexture(CVOpenGLESTextureGetTarget(backFrameTexture!), 0)
             } else {
                 glClear(GL_COLOR_BUFFER_BIT.ui)
             }
             
             glActiveTexture(GL_TEXTURE2.ui)
-            glBindTexture(CVOpenGLESTextureGetTarget(srcTexture), CVOpenGLESTextureGetName(srcTexture))
+            glBindTexture(CVOpenGLESTextureGetTarget(srcTexture!), CVOpenGLESTextureGetName(srcTexture!))
             glUniform1i(_frame, 2)
             
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_MIN_FILTER.ui, GL_LINEAR)
@@ -503,7 +488,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_S.ui, GL_CLAMP_TO_EDGE)
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_T.ui, GL_CLAMP_TO_EDGE)
             
-            var scaleFront: [Float] = [kFrontScaleFactor, kFrontScaleFactor, 0.0]
+            let scaleFront: [Float] = [kFrontScaleFactor, kFrontScaleFactor, 0.0]
             mat4f.LoadScale(scaleFront, &modelview)
             
             glUniformMatrix4fv(_modelView, 1, false, modelview)
@@ -515,8 +500,8 @@ class VideoSnakeOpenGLRenderer: NSObject {
             
             glDrawArrays(GL_TRIANGLE_STRIP.ui, 0, 4)
             
-            glBindTexture(CVOpenGLESTextureGetTarget(srcTexture), 0)
-            glBindTexture(CVOpenGLESTextureGetTarget(dstTexture), 0)
+            glBindTexture(CVOpenGLESTextureGetTarget(srcTexture!), 0)
+            glBindTexture(CVOpenGLESTextureGetTarget(dstTexture!), 0)
             
             if _backFramePixelBuffer != nil {
                 _backFramePixelBuffer = nil

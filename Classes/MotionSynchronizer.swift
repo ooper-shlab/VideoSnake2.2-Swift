@@ -110,7 +110,7 @@ class MotionSynchronizer: NSObject {
             if self.motionManager.deviceMotionAvailable {
                 let motionHandler: CMDeviceMotionHandler = {motion, error in
                     if error == nil {
-                        self.appendMotionSampleForSynchronization(motion)
+                        self.appendMotionSampleForSynchronization(motion!)
                     } else {
                         NSLog("%@", error!)
                     }
@@ -169,7 +169,7 @@ class MotionSynchronizer: NSObject {
         
         for mediaIndex in 0..<self.mediaSamples.count {
             let mediaSample = self.mediaSamples[mediaIndex]
-            let mediaTimeDict = CMGetAttachment(mediaSample, VIDEOSNAKE_REMAPPED_PTS, nil)?.takeUnretainedValue() as! NSDictionary?
+            let mediaTimeDict = CMGetAttachment(mediaSample, VIDEOSNAKE_REMAPPED_PTS, nil) as! NSDictionary?
             let mediaTime = (mediaTimeDict != nil) ? CMTimeMakeFromDictionary(mediaTimeDict!) : CMSampleBufferGetPresentationTimeStamp(mediaSample)
             let mediaTimeSeconds = CMTimeGetSeconds(mediaTime)
             var closestDifference = DBL_MAX
@@ -243,11 +243,11 @@ class MotionSynchronizer: NSObject {
     
     private func convertSampleBufferTimeToMotionClock(sampleBuffer: CMSampleBuffer) {
         let originalPTS = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-        let remappedPTS = CMSyncConvertTime(originalPTS, self.sampleBufferClock, self.motionClock)
+        let remappedPTS = CMSyncConvertTime(originalPTS, self.sampleBufferClock!, self.motionClock)
         
         // Attach the remapped timestamp to the buffer for use in -sync
         let remappedPTSDict = CMTimeCopyAsDictionary(remappedPTS, kCFAllocatorDefault)
-        CMSetAttachment(sampleBuffer, VIDEOSNAKE_REMAPPED_PTS, remappedPTSDict, kCMAttachmentMode_ShouldPropagate.ui)
+        CMSetAttachment(sampleBuffer, VIDEOSNAKE_REMAPPED_PTS, remappedPTSDict, kCMAttachmentMode_ShouldPropagate)
         
     }
     
