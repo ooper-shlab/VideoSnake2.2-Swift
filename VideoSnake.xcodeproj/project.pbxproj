@@ -35,7 +35,6 @@
 		D767088A1AAC20D300DCDE4D /* MovieRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76708891AAC20D300DCDE4D /* MovieRecorder.swift */; };
 		D767088C1AADB7E300DCDE4D /* ObjC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D767088B1AADB7E300DCDE4D /* ObjC.swift */; };
 		D7828DAD1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7828DAC1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift */; };
-		D78DB8C01AC2E5C300DE8A05 /* CMTime+.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78DB8BF1AC2E5C300DE8A05 /* CMTime+.swift */; };
 		D78DB8C21AC2E6A000DE8A05 /* VideoSnakeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78DB8C11AC2E6A000DE8A05 /* VideoSnakeViewController.swift */; };
 		D7ABAF241AC6D82B0056BA41 /* OpenGLPixelBufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AE3C3A1AA887E00077B2CD /* OpenGLPixelBufferView.swift */; };
 		D7ABAF2B1AC6E4570056BA41 /* MotionSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70310BD1AB05D5A00F8105E /* MotionSynchronizer.swift */; };
@@ -312,7 +311,6 @@
 				D7ABAF2B1AC6E4570056BA41 /* MotionSynchronizer.swift in Sources */,
 				D7ABAF241AC6D82B0056BA41 /* OpenGLPixelBufferView.swift in Sources */,
 				D7ABAF2F1AC6E5DB0056BA41 /* VideoSnakeSessionManager.swift in Sources */,
-				D78DB8C01AC2E5C300DE8A05 /* CMTime+.swift in Sources */,
 				D7828DAD1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -181,7 +181,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     override init() {
         recordingOrientation = AVCaptureVideoOrientation(rawValue: UIDeviceOrientation.Portrait.rawValue)!
         
-        _recordingURL = NSURL(fileURLWithPath: String.pathWithComponents([NSTemporaryDirectory(), "Movie.MOV"]))
+        _recordingURL = NSURL(fileURLWithPath: NSString.pathWithComponents([NSTemporaryDirectory(), "Movie.MOV"]) as String)
         
         _sessionQueue = dispatch_queue_create("com.apple.sample.sessionmanager.capture", DISPATCH_QUEUE_SERIAL)
         
