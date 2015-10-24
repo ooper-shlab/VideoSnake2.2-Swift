@@ -150,7 +150,7 @@ class MotionSynchronizer: NSObject {
     private func outputSampleBuffer(sampleBuffer: CMSampleBuffer, withSynchronizedMotionSample motion: CMDeviceMotion?) {
         dispatch_async(_delegateCallbackQueue) {
             autoreleasepool {
-                _delegate?.motionSynchronizer(self, didOutputSampleBuffer: sampleBuffer, withMotion: motion)
+                self._delegate?.motionSynchronizer(self, didOutputSampleBuffer: sampleBuffer, withMotion: motion)
             }
         }
     }
