@@ -106,15 +106,15 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
         self.videoSnakeSessionManager.setDelegate(self, callbackQueue: dispatch_get_main_queue())
         
         NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "applicationDidEnterBackground",
+            selector: #selector(VideoSnakeViewController.applicationDidEnterBackground),
             name: UIApplicationDidEnterBackgroundNotification,
             object: UIApplication.sharedApplication())
         NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "applicationWillEnterForeground",
+            selector: #selector(VideoSnakeViewController.applicationWillEnterForeground),
             name: UIApplicationWillEnterForegroundNotification,
             object: UIApplication.sharedApplication())
         NSNotificationCenter.defaultCenter().addObserver(self,
-            selector: "deviceOrientationDidChange",
+            selector: #selector(VideoSnakeViewController.deviceOrientationDidChange),
             name: UIDeviceOrientationDidChangeNotification,
             object: UIDevice.currentDevice())
         
@@ -134,7 +134,7 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
         super.viewWillAppear(animated)
         self.videoSnakeSessionManager.startRunning()
         
-        self.labelTimer = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: "updateLabels", userInfo: nil, repeats: true)
+        self.labelTimer = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: #selector(VideoSnakeViewController.updateLabels), userInfo: nil, repeats: true)
     }
     
     override func viewDidDisappear(animated: Bool) {

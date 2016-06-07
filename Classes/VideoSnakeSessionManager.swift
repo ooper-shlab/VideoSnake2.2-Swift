@@ -266,7 +266,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         _captureSession = AVCaptureSession()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "captureSessionNotification:", name: nil, object: _captureSession)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(VideoSnakeSessionManager.captureSessionNotification(_:)), name: nil, object: _captureSession)
         _applicationWillEnterForegroundNotificationObserver = NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationWillEnterForegroundNotification, object: UIApplication.sharedApplication(), queue: nil) {note in
             // Retain self while the capture session is alive by referencing it in this observer block which is tied to the session lifetime
             // Client must stop us running before we can be deallocated
@@ -426,11 +426,11 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     private func applicationWillEnterForeground() {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), __FUNCTION__)
+        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
         
         dispatch_sync( _sessionQueue) {
             if self._startCaptureSessionOnEnteringForeground {
-                NSLog("-[%@ %@] manually restarting session", NSStringFromClass(self.dynamicType), __FUNCTION__)
+                NSLog("-[%@ %@] manually restarting session", NSStringFromClass(self.dynamicType), #function)
                 
                 self._startCaptureSessionOnEnteringForeground = false
                 if self._running {
@@ -443,7 +443,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     //MARK: Capture Pipeline
     
     private func setupVideoPipelineWithInputFormatDescription(inputFormatDescription: CMFormatDescription) {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), __FUNCTION__)
+        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
         
         self.videoPipelineWillStartRunning()
         
@@ -464,7 +464,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         // Synchronize with those queues to guarantee no more buffers are in flight.
         // Once the pipeline is drained we can tear it down safely.
         
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), __FUNCTION__)
+        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
         
         dispatch_sync(_videoDataOutputQueue){
             
@@ -478,7 +478,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
                 self._renderer.reset()
                 self.currentPreviewPixelBuffer = nil
                 
-                NSLog("-[%@ %@] finished teardown", NSStringFromClass(self.dynamicType), __FUNCTION__)
+                NSLog("-[%@ %@] finished teardown", NSStringFromClass(self.dynamicType), #function)
                 
                 self.videoPipelineDidFinishRunning()
             }
@@ -486,7 +486,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     private func videoPipelineWillStartRunning() {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), __FUNCTION__)
+        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
         
         assert(_pipelineRunningTask == UIBackgroundTaskInvalid, "should not have a background task active before the video pipeline starts running")
         
@@ -496,7 +496,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     private func videoPipelineDidFinishRunning() {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), __FUNCTION__)
+        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
         
         assert(_pipelineRunningTask != UIBackgroundTaskInvalid, "should have a background task active when the video pipeline finishes running")
         

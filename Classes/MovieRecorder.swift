@@ -448,7 +448,7 @@ class MovieRecorder: NSObject {
     
     
     private func setupAssetWriterAudioInput(audioFormatDescription: CMFormatDescription) throws {
-        let supportsFormatHint = AVAssetWriterInput.instancesRespondToSelector("initWithMediaType:outputSettings:sourceFormatHint:") // supported on iOS 6 and later
+        let supportsFormatHint = AVAssetWriterInput.instancesRespondToSelector(#selector(AVAssetWriterInput.init(mediaType:outputSettings:sourceFormatHint:))) // supported on iOS 6 and later
         
         let audioCompressionSettings: [String : AnyObject]
         
@@ -495,7 +495,7 @@ class MovieRecorder: NSObject {
     }
     
     private func setupAssetWriterVideoInput(videoFormatDescription: CMFormatDescription, transform: CGAffineTransform) throws {
-        let supportsFormatHint = AVAssetWriterInput.instancesRespondToSelector("initWithMediaType:outputSettings:sourceFormatHint:") // supported on iOS 6 and later
+        let supportsFormatHint = AVAssetWriterInput.instancesRespondToSelector(#selector(AVAssetWriterInput.init(mediaType:outputSettings:sourceFormatHint:))) // supported on iOS 6 and later
         
         var bitsPerPixel: Float
         let dimensions = CMVideoFormatDescriptionGetDimensions(videoFormatDescription)
