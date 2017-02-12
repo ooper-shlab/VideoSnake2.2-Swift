@@ -29,17 +29,19 @@
 		6F90DE091395CCEA00125BDA /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DE081395CCEA00125BDA /* QuartzCore.framework */; };
 		6F90DE0B1395CCF500125BDA /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DE0A1395CCF500125BDA /* CoreMedia.framework */; };
 		7214DBCE182AEF8900EA3F99 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7214DBCD182AEF8900EA3F99 /* Images.xcassets */; };
-		D74F0CBC1AA743CD0067D268 /* matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74F0CBB1AA743CD0067D268 /* matrix.swift */; };
-		D74F0CBE1AA743EC0067D268 /* ShaderUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74F0CBD1AA743EC0067D268 /* ShaderUtilities.swift */; };
-		D74F0CC01AA743F70067D268 /* NumTypes+Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74F0CBF1AA743F70067D268 /* NumTypes+Conversion.swift */; };
-		D767088A1AAC20D300DCDE4D /* MovieRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76708891AAC20D300DCDE4D /* MovieRecorder.swift */; };
-		D767088C1AADB7E300DCDE4D /* ObjC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D767088B1AADB7E300DCDE4D /* ObjC.swift */; };
-		D7828DAD1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7828DAC1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift */; };
-		D78DB8C21AC2E6A000DE8A05 /* VideoSnakeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78DB8C11AC2E6A000DE8A05 /* VideoSnakeViewController.swift */; };
-		D7ABAF241AC6D82B0056BA41 /* OpenGLPixelBufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AE3C3A1AA887E00077B2CD /* OpenGLPixelBufferView.swift */; };
-		D7ABAF2B1AC6E4570056BA41 /* MotionSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70310BD1AB05D5A00F8105E /* MotionSynchronizer.swift */; };
-		D7ABAF2F1AC6E5DB0056BA41 /* VideoSnakeSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7D3E1BF1AB6F6D80054A316 /* VideoSnakeSessionManager.swift */; };
-		D7ABAF341AC6EDDA0056BA41 /* VideoSnakeOpenGLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7E557E81AB1BE470062D25A /* VideoSnakeOpenGLRenderer.swift */; };
+		D7DA99F41E50437800F9C60B /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = D7DA99F21E50437800F9C60B /* README.md */; };
+		D7DA99F51E50437800F9C60B /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = D7DA99F31E50437800F9C60B /* LICENSE.txt */; };
+		D7DA99FA1E5043ED00F9C60B /* VideoSnakeOpenGLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA99F61E5043ED00F9C60B /* VideoSnakeOpenGLRenderer.swift */; };
+		D7DA99FB1E5043ED00F9C60B /* VideoSnakeSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA99F71E5043ED00F9C60B /* VideoSnakeSessionManager.swift */; };
+		D7DA99FC1E5043ED00F9C60B /* VideoSnakeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA99F81E5043ED00F9C60B /* VideoSnakeViewController.swift */; };
+		D7DA99FD1E5043ED00F9C60B /* VideoSnakeAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA99F91E5043ED00F9C60B /* VideoSnakeAppDelegate.swift */; };
+		D7DA9A031E50451800F9C60B /* NumTypes+Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A001E50451800F9C60B /* NumTypes+Conversion.swift */; };
+		D7DA9A041E50451800F9C60B /* ObjC.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A011E50451800F9C60B /* ObjC.swift */; };
+		D7DA9A071E50460000F9C60B /* matrix.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A051E50460000F9C60B /* matrix.swift */; };
+		D7DA9A081E50460000F9C60B /* ShaderUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A061E50460000F9C60B /* ShaderUtilities.swift */; };
+		D7DA9A0C1E50461F00F9C60B /* MotionSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A091E50461F00F9C60B /* MotionSynchronizer.swift */; };
+		D7DA9A0D1E50461F00F9C60B /* MovieRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A0A1E50461F00F9C60B /* MovieRecorder.swift */; };
+		D7DA9A0E1E50461F00F9C60B /* OpenGLPixelBufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A0B1E50461F00F9C60B /* OpenGLPixelBufferView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -74,19 +76,19 @@
 		7214DBCB182AECC100EA3F99 /* PadIcon@1x-Settings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "PadIcon@1x-Settings.png"; path = "../Resources/PadIcon@1x-Settings.png"; sourceTree = "<group>"; };
 		7214DBCC182AECCD00EA3F99 /* PadIcon@2x-Settings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "PadIcon@2x-Settings.png"; path = "../Resources/PadIcon@2x-Settings.png"; sourceTree = "<group>"; };
 		7214DBCD182AEF8900EA3F99 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Resources/Images.xcassets; sourceTree = SOURCE_ROOT; };
-		D70310BD1AB05D5A00F8105E /* MotionSynchronizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MotionSynchronizer.swift; sourceTree = "<group>"; };
-		D74F0CBB1AA743CD0067D268 /* matrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = matrix.swift; path = Utilities/GL/matrix.swift; sourceTree = "<group>"; };
-		D74F0CBD1AA743EC0067D268 /* ShaderUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShaderUtilities.swift; path = Utilities/GL/ShaderUtilities.swift; sourceTree = "<group>"; };
-		D74F0CBF1AA743F70067D268 /* NumTypes+Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NumTypes+Conversion.swift"; sourceTree = "<group>"; };
-		D76708891AAC20D300DCDE4D /* MovieRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieRecorder.swift; sourceTree = "<group>"; };
-		D767088B1AADB7E300DCDE4D /* ObjC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjC.swift; sourceTree = "<group>"; };
-		D7828DAC1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeAppDelegate.swift; sourceTree = "<group>"; };
-		D78DB8BF1AC2E5C300DE8A05 /* CMTime+.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "CMTime+.swift"; sourceTree = "<group>"; };
-		D78DB8C11AC2E6A000DE8A05 /* VideoSnakeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeViewController.swift; sourceTree = "<group>"; };
-		D7ABAF351AC6F0C10056BA41 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		D7AE3C3A1AA887E00077B2CD /* OpenGLPixelBufferView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenGLPixelBufferView.swift; sourceTree = "<group>"; };
-		D7D3E1BF1AB6F6D80054A316 /* VideoSnakeSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeSessionManager.swift; sourceTree = "<group>"; };
-		D7E557E81AB1BE470062D25A /* VideoSnakeOpenGLRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeOpenGLRenderer.swift; sourceTree = "<group>"; };
+		D7DA99F21E50437800F9C60B /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D7DA99F31E50437800F9C60B /* LICENSE.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE.txt; sourceTree = "<group>"; };
+		D7DA99F61E5043ED00F9C60B /* VideoSnakeOpenGLRenderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeOpenGLRenderer.swift; sourceTree = "<group>"; };
+		D7DA99F71E5043ED00F9C60B /* VideoSnakeSessionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeSessionManager.swift; sourceTree = "<group>"; };
+		D7DA99F81E5043ED00F9C60B /* VideoSnakeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeViewController.swift; sourceTree = "<group>"; };
+		D7DA99F91E5043ED00F9C60B /* VideoSnakeAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoSnakeAppDelegate.swift; sourceTree = "<group>"; };
+		D7DA9A001E50451800F9C60B /* NumTypes+Conversion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NumTypes+Conversion.swift"; sourceTree = "<group>"; };
+		D7DA9A011E50451800F9C60B /* ObjC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjC.swift; sourceTree = "<group>"; };
+		D7DA9A051E50460000F9C60B /* matrix.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = matrix.swift; sourceTree = "<group>"; };
+		D7DA9A061E50460000F9C60B /* ShaderUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShaderUtilities.swift; sourceTree = "<group>"; };
+		D7DA9A091E50461F00F9C60B /* MotionSynchronizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MotionSynchronizer.swift; sourceTree = "<group>"; };
+		D7DA9A0A1E50461F00F9C60B /* MovieRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieRecorder.swift; sourceTree = "<group>"; };
+		D7DA9A0B1E50461F00F9C60B /* OpenGLPixelBufferView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenGLPixelBufferView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,10 +125,12 @@
 		6F90DDCA1395CAAA00125BDA = {
 			isa = PBXGroup;
 			children = (
-				D7ABAF351AC6F0C10056BA41 /* README.md */,
+				D7DA99F31E50437800F9C60B /* LICENSE.txt */,
 				28365598139FE71B00D09100 /* ReadMe.txt */,
+				D7DA99F21E50437800F9C60B /* README.md */,
 				6F90DDDF1395CAAA00125BDA /* Classes */,
 				6FF11C8616A8778500E14D71 /* Utilities */,
+				D7DA99FE1E50451800F9C60B /* OOPUtils */,
 				6F90DDE01395CAAA00125BDA /* Resources */,
 				6F90DDD81395CAAA00125BDA /* Frameworks */,
 				6F90DDD61395CAAA00125BDA /* Products */,
@@ -162,10 +166,10 @@
 		6F90DDDF1395CAAA00125BDA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				D78DB8C11AC2E6A000DE8A05 /* VideoSnakeViewController.swift */,
-				D7D3E1BF1AB6F6D80054A316 /* VideoSnakeSessionManager.swift */,
-				D7E557E81AB1BE470062D25A /* VideoSnakeOpenGLRenderer.swift */,
-				D7828DAC1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift */,
+				D7DA99F81E5043ED00F9C60B /* VideoSnakeViewController.swift */,
+				D7DA99F71E5043ED00F9C60B /* VideoSnakeSessionManager.swift */,
+				D7DA99F61E5043ED00F9C60B /* VideoSnakeOpenGLRenderer.swift */,
+				D7DA99F91E5043ED00F9C60B /* VideoSnakeAppDelegate.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -198,11 +202,10 @@
 		6FF11C8616A8778500E14D71 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				D70310BD1AB05D5A00F8105E /* MotionSynchronizer.swift */,
-				D76708891AAC20D300DCDE4D /* MovieRecorder.swift */,
-				D7AE3C3A1AA887E00077B2CD /* OpenGLPixelBufferView.swift */,
+				D7DA9A091E50461F00F9C60B /* MotionSynchronizer.swift */,
+				D7DA9A0A1E50461F00F9C60B /* MovieRecorder.swift */,
+				D7DA9A0B1E50461F00F9C60B /* OpenGLPixelBufferView.swift */,
 				6FF11C9016A877A100E14D71 /* GL */,
-				D74F0CB71AA7437C0067D268 /* OOPUtils */,
 			);
 			name = Utilities;
 			path = Classes;
@@ -211,21 +214,20 @@
 		6FF11C9016A877A100E14D71 /* GL */ = {
 			isa = PBXGroup;
 			children = (
-				D74F0CBB1AA743CD0067D268 /* matrix.swift */,
-				D74F0CBD1AA743EC0067D268 /* ShaderUtilities.swift */,
+				D7DA9A051E50460000F9C60B /* matrix.swift */,
+				D7DA9A061E50460000F9C60B /* ShaderUtilities.swift */,
 			);
 			name = GL;
 			sourceTree = "<group>";
 		};
-		D74F0CB71AA7437C0067D268 /* OOPUtils */ = {
+		D7DA99FE1E50451800F9C60B /* OOPUtils */ = {
 			isa = PBXGroup;
 			children = (
-				D78DB8BF1AC2E5C300DE8A05 /* CMTime+.swift */,
-				D767088B1AADB7E300DCDE4D /* ObjC.swift */,
-				D74F0CBF1AA743F70067D268 /* NumTypes+Conversion.swift */,
+				D7DA9A001E50451800F9C60B /* NumTypes+Conversion.swift */,
+				D7DA9A011E50451800F9C60B /* ObjC.swift */,
 			);
 			name = OOPUtils;
-			path = Utilities/OOPUtils;
+			path = Classes/OOPUtils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -254,12 +256,10 @@
 		6F90DDCC1395CAAA00125BDA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftMigration = 0700;
-				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0820;
 				TargetAttributes = {
 					6F90DDD41395CAAA00125BDA = {
-						DevelopmentTeam = D9ACCH3T4Y;
+						CreatedOnToolsVersion = 8.0;
 						LastSwiftMigration = 0820;
 					};
 				};
@@ -290,6 +290,7 @@
 				265E755B17177999000756EE /* videoSnake.vsh in Resources */,
 				6F90DDE41395CAAA00125BDA /* InfoPlist.strings in Resources */,
 				281FB47F176694640071511D /* Main.storyboard in Resources */,
+				D7DA99F51E50437800F9C60B /* LICENSE.txt in Resources */,
 				28365599139FE71B00D09100 /* ReadMe.txt in Resources */,
 				1B81139B1589642F00635C77 /* PhoneIcon.png in Resources */,
 				1B81139D1589643A00635C77 /* PhoneIcon@2x.png in Resources */,
@@ -307,17 +308,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D74F0CBC1AA743CD0067D268 /* matrix.swift in Sources */,
-				D7ABAF341AC6EDDA0056BA41 /* VideoSnakeOpenGLRenderer.swift in Sources */,
-				D74F0CC01AA743F70067D268 /* NumTypes+Conversion.swift in Sources */,
-				D767088C1AADB7E300DCDE4D /* ObjC.swift in Sources */,
-				D78DB8C21AC2E6A000DE8A05 /* VideoSnakeViewController.swift in Sources */,
-				D767088A1AAC20D300DCDE4D /* MovieRecorder.swift in Sources */,
-				D74F0CBE1AA743EC0067D268 /* ShaderUtilities.swift in Sources */,
-				D7ABAF2B1AC6E4570056BA41 /* MotionSynchronizer.swift in Sources */,
-				D7ABAF241AC6D82B0056BA41 /* OpenGLPixelBufferView.swift in Sources */,
-				D7ABAF2F1AC6E5DB0056BA41 /* VideoSnakeSessionManager.swift in Sources */,
-				D7828DAD1AC5ABE500449A17 /* VideoSnakeAppDelegate.swift in Sources */,
+				D7DA9A041E50451800F9C60B /* ObjC.swift in Sources */,
+				D7DA9A0C1E50461F00F9C60B /* MotionSynchronizer.swift in Sources */,
+				D7DA99FB1E5043ED00F9C60B /* VideoSnakeSessionManager.swift in Sources */,
+				D7DA9A081E50460000F9C60B /* ShaderUtilities.swift in Sources */,
+				D7DA99FC1E5043ED00F9C60B /* VideoSnakeViewController.swift in Sources */,
+				D7DA9A031E50451800F9C60B /* NumTypes+Conversion.swift in Sources */,
+				D7DA99F41E50437800F9C60B /* README.md in Sources */,
+				D7DA99FA1E5043ED00F9C60B /* VideoSnakeOpenGLRenderer.swift in Sources */,
+				D7DA99FD1E5043ED00F9C60B /* VideoSnakeAppDelegate.swift in Sources */,
+				D7DA9A0D1E50461F00F9C60B /* MovieRecorder.swift in Sources */,
+				D7DA9A071E50460000F9C60B /* matrix.swift in Sources */,
+				D7DA9A0E1E50461F00F9C60B /* OpenGLPixelBufferView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,7 +384,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_SWIFT_FLAGS = "-DRECORD_AUDIO -DLOG_STATUS_TRANSITIONS";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -421,7 +422,6 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
-				OTHER_SWIFT_FLAGS = "-DRECORD_AUDIO -DLOG_STATUS_TRANSITIONS";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -438,7 +438,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
-				DEVELOPMENT_TEAM = D9ACCH3T4Y;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VideoSnake-Prefix.pch";
 				INFOPLIST_FILE = "VideoSnake-Info.plist";
@@ -446,6 +447,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -459,7 +461,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
-				DEVELOPMENT_TEAM = D9ACCH3T4Y;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VideoSnake-Prefix.pch";
 				INFOPLIST_FILE = "VideoSnake-Info.plist";
@@ -467,6 +470,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
 				SWIFT_VERSION = 3.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
