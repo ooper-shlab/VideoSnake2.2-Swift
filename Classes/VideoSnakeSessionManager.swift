@@ -60,17 +60,17 @@ import CoreMotion
 @objc(VideoSnakeSessionManagerDelegate)
 protocol VideoSnakeSessionManagerDelegate: NSObjectProtocol {
     
-    func sessionManager(sessionManager: VideoSnakeSessionManager, didStopRunningWithError error: NSError)
+    func sessionManager(_ sessionManager: VideoSnakeSessionManager, didStopRunningWith error: Error)
     
     // Preview
-    func sessionManager(sessionManager: VideoSnakeSessionManager, previewPixelBufferReadyForDisplay previewPixelBuffer: CVPixelBuffer)
-    func sessionManagerDidRunOutOfPreviewBuffers(sessionManager: VideoSnakeSessionManager)
+    func sessionManager(_ sessionManager: VideoSnakeSessionManager, previewPixelBufferReadyForDisplay previewPixelBuffer: CVPixelBuffer)
+    func sessionManagerDidRunOutOfPreviewBuffers(_ sessionManager: VideoSnakeSessionManager)
     
     // Recording
-    func sessionManagerRecordingDidStart(manager: VideoSnakeSessionManager)
-    func sessionManager(manager:VideoSnakeSessionManager, recordingDidFailWithError error:NSError) // Can happen at any point after a startRecording call, for example: startRecording->didFail (without a didStart), willStop->didFail (without a didStop)
-    func sessionManagerRecordingWillStop(manager: VideoSnakeSessionManager)
-    func sessionManagerRecordingDidStop(manager: VideoSnakeSessionManager)
+    func sessionManagerRecordingDidStart(_ manager: VideoSnakeSessionManager)
+    func sessionManager(_ manager:VideoSnakeSessionManager, recordingDidFailWith error: Error) // Can happen at any point after a startRecording call, for example: startRecording->didFail (without a didStart), willStop->didFail (without a didStop)
+    func sessionManagerRecordingWillStop(_ manager: VideoSnakeSessionManager)
+    func sessionManagerRecordingDidStop(_ manager: VideoSnakeSessionManager)
     
 }
 
@@ -98,39 +98,39 @@ private let RETAINED_BUFFER_COUNT = 5
 //#define LOG_STATUS_TRANSITIONS 0
 
 private enum VideoSnakeRecordingStatus: Int {
-    case Idle = 0
-    case StartingRecording
-    case Recording
-    case StoppingRecording
+    case idle = 0
+    case startingRecording
+    case recording
+    case stoppingRecording
 } // internal state machine
 #if LOG_STATUS_TRANSITIONS
-    extension VideoSnakeRecordingStatus {
-    var toString: String {
-    switch self {
-    case .Idle:
-    return "Idle"
-    case .StartingRecording:
-    return "StartingRecording"
-    case .Recording:
-    return "Recording"
-    case .StoppingRecording:
-    return "StoppingRecording"
-    }
-    }
+    extension VideoSnakeRecordingStatus: CustomStringConvertible {
+        var description: String {
+            switch self {
+            case .idle:
+                return "Idle"
+            case .startingRecording:
+                return "StartingRecording"
+            case .recording:
+                return "Recording"
+            case .stoppingRecording:
+                return "StoppingRecording"
+            }
+        }
     }
 #endif // LOG_STATUS_TRANSITIONS
 
-private func angleOffsetFromPortraitOrientationToOrientation(orientation: AVCaptureVideoOrientation) -> CGFloat {
+private func angleOffsetFromPortraitOrientationToOrientation(_ orientation: AVCaptureVideoOrientation) -> CGFloat {
     var angle: CGFloat = 0.0
     
     switch orientation {
-    case .Portrait:
+    case .portrait:
         angle = 0.0
-    case .PortraitUpsideDown:
+    case .portraitUpsideDown:
         angle = M_PI.g
-    case .LandscapeRight:
+    case .landscapeRight:
         angle = -M_PI_2.g
-    case .LandscapeLeft:
+    case .landscapeLeft:
         angle = M_PI_2.g
     }
     
@@ -141,7 +141,7 @@ private func angleOffsetFromPortraitOrientationToOrientation(orientation: AVCapt
 class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate, AVCaptureVideoDataOutputSampleBufferDelegate, MovieRecorderDelegate, MotionSynchronizationDelegate {
     var recordingOrientation: AVCaptureVideoOrientation // client can set the orientation for the recorded movie
     private weak var _delegate: VideoSnakeSessionManagerDelegate?
-    private var _delegateCallbackQueue: dispatch_queue_t!
+    private var _delegateCallbackQueue: DispatchQueue!
     
     private var _previousSecondTimestamps: [CMTime] = []
     
@@ -153,15 +153,15 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     private var _startCaptureSessionOnEnteringForeground: Bool = false
     private var _applicationWillEnterForegroundNotificationObserver: AnyObject?
     
-    private var _sessionQueue: dispatch_queue_t
-    private var _videoDataOutputQueue: dispatch_queue_t
-    private var _motionSyncedVideoQueue: dispatch_queue_t
+    private var _sessionQueue: DispatchQueue
+    private var _videoDataOutputQueue: DispatchQueue
+    private var _motionSyncedVideoQueue: DispatchQueue
     
     private var _renderer: VideoSnakeOpenGLRenderer!
     private var _renderingEnabled: Bool = false
     
-    private var _recordingURL: NSURL
-    private var _recordingStatus: VideoSnakeRecordingStatus = .Idle
+    private var _recordingURL: URL
+    private var _recordingStatus: VideoSnakeRecordingStatus = .idle
     
     private var _pipelineRunningTask: UIBackgroundTaskIdentifier = 0
     
@@ -171,7 +171,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     private(set) var videoFrameRate: Float = 0.0
     private(set) var videoDimensions: CMVideoDimensions = CMVideoDimensions()
     
-    private var videoOrientation: AVCaptureVideoOrientation = AVCaptureVideoOrientation.Portrait
+    private var videoOrientation: AVCaptureVideoOrientation = AVCaptureVideoOrientation.portrait
     private var motionSynchronizer: MotionSynchronizer
     
     private var outputVideoFormatDescription: CMFormatDescription?
@@ -179,21 +179,25 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     private var recorder: MovieRecorder?
     
     override init() {
-        recordingOrientation = AVCaptureVideoOrientation(rawValue: UIDeviceOrientation.Portrait.rawValue)!
+        recordingOrientation = AVCaptureVideoOrientation(rawValue: UIDeviceOrientation.portrait.rawValue)!
         
-        _recordingURL = NSURL(fileURLWithPath: NSString.pathWithComponents([NSTemporaryDirectory(), "Movie.MOV"]) as String)
+        if #available(iOS 10.0, *) {
+            _recordingURL = FileManager.default.temporaryDirectory.appendingPathComponent("Movie.MOV")
+        } else {
+            _recordingURL = URL(fileURLWithPath: NSString.path(withComponents: [NSTemporaryDirectory(), "Movie.MOV"]) as String)
+        }
         
-        _sessionQueue = dispatch_queue_create("com.apple.sample.sessionmanager.capture", DISPATCH_QUEUE_SERIAL)
+        _sessionQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.capture", attributes: [])
         
         // In a multi-threaded producer consumer system it's generally a good idea to make sure that producers do not get starved of CPU time by their consumers.
         // In this app we start with VideoDataOutput frames on a high priority queue, and downstream consumers use default priority queues.
         // Audio uses a default priority queue because we aren't monitoring it live and just want to get it into the movie.
         // AudioDataOutput can tolerate more latency than VideoDataOutput as its buffers aren't allocated out of a fixed size pool.
-        _videoDataOutputQueue = dispatch_queue_create( "com.apple.sample.sessionmanager.video", DISPATCH_QUEUE_SERIAL )
-        dispatch_set_target_queue(_videoDataOutputQueue, dispatch_get_global_queue( DISPATCH_QUEUE_PRIORITY_HIGH, 0))
+        _videoDataOutputQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.video")
+        _videoDataOutputQueue.setTarget(queue: DispatchQueue.global(qos: .userInteractive))
         
         motionSynchronizer = MotionSynchronizer()
-        _motionSyncedVideoQueue = dispatch_queue_create("com.apple.sample.sessionmanager.motion", DISPATCH_QUEUE_SERIAL)
+        _motionSyncedVideoQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.motion")
         super.init()
         motionSynchronizer.setSynchronizedSampleBufferDelegate(self, queue: _motionSyncedVideoQueue)
         
@@ -211,7 +215,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     //MARK: Delegate
     
-    func setDelegate(delegate: VideoSnakeSessionManagerDelegate?, callbackQueue delegateCallbackQueue:dispatch_queue_t?) {
+    func setDelegate(_ delegate: VideoSnakeSessionManagerDelegate?, callbackQueue delegateCallbackQueue:DispatchQueue?) {
         if delegate != nil && delegateCallbackQueue == nil {
             fatalError("Caller must provide a delegateCallbackQueue")
         }
@@ -235,7 +239,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     // Consider renaming this class VideoSnakeCapturePipeline
     // These methods are synchronous
     func startRunning() {
-        dispatch_sync(_sessionQueue) {
+        _sessionQueue.sync {
             
             self.setupCaptureSession()
             
@@ -245,7 +249,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     func stopRunning() {
-        dispatch_sync(_sessionQueue) {
+        _sessionQueue.sync {
             self._running = false
             
             // the captureSessionDidStopRunning method will stop recording if necessary as well, but we do it here so that the last video and audio samples are better aligned
@@ -266,8 +270,8 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         _captureSession = AVCaptureSession()
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(VideoSnakeSessionManager.captureSessionNotification(_:)), name: nil, object: _captureSession)
-        _applicationWillEnterForegroundNotificationObserver = NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationWillEnterForegroundNotification, object: UIApplication.sharedApplication(), queue: nil) {note in
+        NotificationCenter.default.addObserver(self, selector: #selector(VideoSnakeSessionManager.captureSessionNotification(_:)), name: nil, object: _captureSession)
+        _applicationWillEnterForegroundNotificationObserver = NotificationCenter.default.addObserver(forName: .UIApplicationWillEnterForeground, object: UIApplication.shared, queue: nil) {note in
             // Retain self while the capture session is alive by referencing it in this observer block which is tied to the session lifetime
             // Client must stop us running before we can be deallocated
             self.applicationWillEnterForeground()
@@ -275,25 +279,30 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         #if RECORD_AUDIO
             /* Audio */
-            let audioDevice = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeAudio)
-            let audioIn = AVCaptureDeviceInput(device: audioDevice, error: nil)
+            let audioDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
+            let audioIn: AVCaptureDeviceInput?
+            do {
+                audioIn = try AVCaptureDeviceInput(device: audioDevice)
+            } catch {
+                audioIn = nil
+            }
             if _captureSession!.canAddInput(audioIn) {
-            _captureSession!.addInput(audioIn)
+                _captureSession!.addInput(audioIn)
             }
             
             let audioOut = AVCaptureAudioDataOutput()
             // Put audio on its own queue to ensure that our video processing doesn't cause us to drop audio
-            let audioCaptureQueue = dispatch_queue_create("com.apple.sample.sessionmanager.audio", DISPATCH_QUEUE_SERIAL)
+            let audioCaptureQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.audio")
             audioOut.setSampleBufferDelegate(self, queue: audioCaptureQueue)
             
             if _captureSession!.canAddOutput(audioOut) {
             _captureSession!.addOutput(audioOut)
             }
-            _audioConnection = audioOut.connectionWithMediaType(AVMediaTypeAudio)
+            _audioConnection = audioOut.connection(withMediaType: AVMediaTypeAudio)
         #endif // RECORD_AUDIO
         
         /* Video */
-        let videoDevice = AVCaptureDevice.defaultDeviceWithMediaType(AVMediaTypeVideo)
+        let videoDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeVideo)
         if videoDevice == nil {
             fatalError("Video capturing is not available for this device")
         }
@@ -321,12 +330,12 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         if _captureSession!.canAddOutput(videoOut) {
             _captureSession!.addOutput(videoOut)
         }
-        _videoConnection = videoOut.connectionWithMediaType(AVMediaTypeVideo)
+        _videoConnection = videoOut.connection(withMediaType: AVMediaTypeVideo)
         
         var frameRate: Int
         var frameDuration = kCMTimeInvalid
         // For single core systems like iPhone 4 and iPod Touch 4th Generation we use a lower resolution and framerate to maintain real-time performance.
-        if NSProcessInfo.processInfo().processorCount == 1 {
+        if ProcessInfo.processInfo.processorCount == 1 {
             if _captureSession!.canSetSessionPreset(AVCaptureSessionPreset640x480) {
                 _captureSession!.sessionPreset = AVCaptureSessionPreset640x480
             }
@@ -342,8 +351,8 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
             videoDevice!.activeVideoMaxFrameDuration = frameDuration
             videoDevice!.activeVideoMinFrameDuration = frameDuration
             videoDevice!.unlockForConfiguration()
-        } catch let error as NSError {
-            NSLog("videoDevice lockForConfiguration returned error %@", error)
+        } catch let error {
+            NSLog("videoDevice lockForConfiguration returned error \(error)")
         }
         
         self.videoOrientation = _videoConnection!.videoOrientation
@@ -355,55 +364,56 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     private func teardownCaptureSession() {
         if _captureSession != nil {
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: nil, object: _captureSession)
+            NotificationCenter.default.removeObserver(self, name: nil, object: _captureSession)
             
-            NSNotificationCenter.defaultCenter().removeObserver(_applicationWillEnterForegroundNotificationObserver!)
+            NotificationCenter.default.removeObserver(_applicationWillEnterForegroundNotificationObserver!)
             _applicationWillEnterForegroundNotificationObserver = nil
             
             _captureSession = nil
         }
     }
     
-    func captureSessionNotification(notification: NSNotification) {
-        dispatch_async(_sessionQueue) {
-            if notification.name == AVCaptureSessionWasInterruptedNotification {
+    func captureSessionNotification(_ notification: Notification) {
+        _sessionQueue.async {
+            if notification.name == NSNotification.Name.AVCaptureSessionWasInterrupted {
                 NSLog("session interrupted")
                 
                 self.captureSessionDidStopRunning()
-            } else if notification.name == AVCaptureSessionInterruptionEndedNotification {
+            } else if notification.name == NSNotification.Name.AVCaptureSessionInterruptionEnded {
                 NSLog("session interruption ended")
-            } else if notification.name == AVCaptureSessionRuntimeErrorNotification {
+            } else if notification.name == NSNotification.Name.AVCaptureSessionRuntimeError {
                 self.captureSessionDidStopRunning()
                 
                 let error = notification.userInfo![AVCaptureSessionErrorKey] as! NSError
-                if error.code == AVError.DeviceIsNotAvailableInBackground.rawValue {
+                if error.code == AVError.Code.deviceIsNotAvailableInBackground.rawValue {
                     NSLog("device not available in background")
                     
                     // Since we can't resume running while in the background we need to remember this for next time we come to the foreground
                     if self._running {
                         self._startCaptureSessionOnEnteringForeground = true
                     }
-                } else if error.code == AVError.MediaServicesWereReset.rawValue {
+                } else if error.code == AVError.Code.mediaServicesWereReset.rawValue {
                     NSLog("media services were reset")
                     self.handleRecoverableCaptureSessionRuntimeError(error)
                 } else {
                     self.handleNonRecoverableCaptureSessionRuntimeError(error)
                 }
-            } else if notification.name == AVCaptureSessionDidStartRunningNotification {
+            } else if notification.name == NSNotification.Name.AVCaptureSessionDidStartRunning {
                 NSLog("session started running")
-            } else if notification.name == AVCaptureSessionDidStopRunningNotification {
+            } else if notification.name == NSNotification.Name.AVCaptureSessionDidStopRunning {
                 NSLog("session stopped running")
             }
         }
     }
     
-    private func handleRecoverableCaptureSessionRuntimeError(error: NSError) {
+    private func handleRecoverableCaptureSessionRuntimeError(_ error: Error) {
         if _running {
             _captureSession?.startRunning()
         }
     }
     
-    private func handleNonRecoverableCaptureSessionRuntimeError(error: NSError) {
+    private func handleNonRecoverableCaptureSessionRuntimeError(_ error: Error) {
+        let error = error as NSError
         NSLog("fatal runtime error %@, code \(error.code)", error)
         
         _running = false
@@ -411,9 +421,9 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         synchronized(self) {
             if self.delegate != nil {
-                dispatch_async(self._delegateCallbackQueue) {
+                self._delegateCallbackQueue.async {
                     autoreleasepool {
-                        self.delegate!.sessionManager(self, didStopRunningWithError: error)
+                        self.delegate!.sessionManager(self, didStopRunningWith: error)
                     }
                 }
             }
@@ -426,11 +436,11 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     private func applicationWillEnterForeground() {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
+        NSLog("-[%@ %@] called", NSStringFromClass(type(of: self)), #function)
         
-        dispatch_sync( _sessionQueue) {
+        _sessionQueue.sync {
             if self._startCaptureSessionOnEnteringForeground {
-                NSLog("-[%@ %@] manually restarting session", NSStringFromClass(self.dynamicType), #function)
+                NSLog("-[%@ %@] manually restarting session", NSStringFromClass(type(of: self)), #function)
                 
                 self._startCaptureSessionOnEnteringForeground = false
                 if self._running {
@@ -442,8 +452,8 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     //MARK: Capture Pipeline
     
-    private func setupVideoPipelineWithInputFormatDescription(inputFormatDescription: CMFormatDescription) {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
+    private func setupVideoPipelineWithInputFormatDescription(_ inputFormatDescription: CMFormatDescription) {
+        NSLog("-[%@ %@] called", NSStringFromClass(type(of: self)), #function)
         
         self.videoPipelineWillStartRunning()
         
@@ -453,7 +463,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         self.videoDimensions = CMVideoFormatDescriptionGetDimensions(inputFormatDescription)
         _renderer.prepareWithOutputDimensions(self.videoDimensions, retainedBufferCountHint: RETAINED_BUFFER_COUNT)
-        _renderer.shouldMirrorMotion = (_videoDevice!.position == .Front); // Account for the fact that front camera preview is mirrored
+        _renderer.shouldMirrorMotion = (_videoDevice!.position == .front); // Account for the fact that front camera preview is mirrored
         self.outputVideoFormatDescription = _renderer.outputFormatDescription
     }
     
@@ -464,21 +474,21 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         // Synchronize with those queues to guarantee no more buffers are in flight.
         // Once the pipeline is drained we can tear it down safely.
         
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
+        NSLog("-[%@ %@] called", NSStringFromClass(type(of: self)), #function)
         
-        dispatch_sync(_videoDataOutputQueue){
+        _videoDataOutputQueue.sync{
             
             if self.outputVideoFormatDescription == nil {
                 return
             }
             
             self.motionSynchronizer.stop() // no new sbufs will be enqueued to _motionSyncedVideoQueue, but some may already be queued
-            dispatch_sync(self._motionSyncedVideoQueue) {
+            self._motionSyncedVideoQueue.sync {
                 self.outputVideoFormatDescription = nil
                 self._renderer.reset()
                 self.currentPreviewPixelBuffer = nil
                 
-                NSLog("-[%@ %@] finished teardown", NSStringFromClass(self.dynamicType), #function)
+                NSLog("-[%@ %@] finished teardown", NSStringFromClass(type(of: self)), #function)
                 
                 self.videoPipelineDidFinishRunning()
             }
@@ -486,21 +496,21 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     private func videoPipelineWillStartRunning() {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
+        NSLog("-[%@ %@] called", NSStringFromClass(type(of: self)), #function)
         
         assert(_pipelineRunningTask == UIBackgroundTaskInvalid, "should not have a background task active before the video pipeline starts running")
         
-        _pipelineRunningTask = UIApplication.sharedApplication().beginBackgroundTaskWithExpirationHandler {
+        _pipelineRunningTask = UIApplication.shared.beginBackgroundTask (expirationHandler: {
             NSLog("video capture pipeline background task expired")
-        }
+        })
     }
     
     private func videoPipelineDidFinishRunning() {
-        NSLog("-[%@ %@] called", NSStringFromClass(self.dynamicType), #function)
+        NSLog("-[%@ %@] called", NSStringFromClass(type(of: self)), #function)
         
         assert(_pipelineRunningTask != UIBackgroundTaskInvalid, "should have a background task active when the video pipeline finishes running")
         
-        UIApplication.sharedApplication().endBackgroundTask(_pipelineRunningTask)
+        UIApplication.shared.endBackgroundTask(_pipelineRunningTask)
         _pipelineRunningTask = UIBackgroundTaskInvalid
     }
     
@@ -509,7 +519,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         // We have run out of buffers.
         // Tell the delegate so that it can flush any cached buffers.
         if self.delegate != nil {
-            dispatch_async(_delegateCallbackQueue) {
+            _delegateCallbackQueue.async {
                 autoreleasepool {
                     self.delegate!.sessionManagerDidRunOutOfPreviewBuffers(self)
                 }
@@ -533,12 +543,12 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     }
     
     // call under @synchronized( self )
-    private func outputPreviewPixelBuffer(previewPixelBuffer: CVPixelBuffer) {
+    private func outputPreviewPixelBuffer(_ previewPixelBuffer: CVPixelBuffer) {
         if self.delegate != nil {
             // Keep preview latency low by dropping stale frames that have not been picked up by the delegate yet
             self.currentPreviewPixelBuffer = previewPixelBuffer
             
-            dispatch_async(_delegateCallbackQueue) {
+            _delegateCallbackQueue.async {
                 autoreleasepool {
                     var currentPreviewPixelBuffer: CVPixelBuffer? = nil
                     synchronized(self) {
@@ -557,7 +567,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     //MARK: Pipeline Stage Output Callbacks
     
-    func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         // For video the basic sample flow is:
         //	1) Frame received from video data output on _videoDataOutputQueue via captureOutput:didOutputSampleBuffer:fromConnection: (this method)
         //	2) Frame sent to motion synchronizer to be asynchronously correlated with motion data
@@ -582,14 +592,14 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
             self.outputAudioFormatDescription = formatDescription
             
             synchronized(self) {
-                if _recordingStatus == .Recording {
+                if _recordingStatus == .recording {
                     self.recorder?.appendAudioSampleBuffer(sampleBuffer)
                 }
             }
         }
     }
     
-    func motionSynchronizer(synchronizer: MotionSynchronizer, didOutputSampleBuffer sampleBuffer: CMSampleBufferRef, withMotion motion: CMDeviceMotion?) {
+    func motionSynchronizer(_ synchronizer: MotionSynchronizer, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, withMotion motion: CMDeviceMotion?) {
         var renderedPixelBuffer: CVPixelBuffer? = nil
         let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
         
@@ -610,7 +620,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
             if renderedPixelBuffer != nil {
                 self.outputPreviewPixelBuffer(renderedPixelBuffer!)
                 
-                if _recordingStatus == .Recording {
+                if _recordingStatus == .recording {
                     self.recorder?.appendVideoPixelBuffer(renderedPixelBuffer!, withPresentationTime: timestamp)
                 }
                 
@@ -626,11 +636,11 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     // These methods are asynchronous, see the recording delegate callbacks
     func startRecording() {
         synchronized(self) {
-            if _recordingStatus != .Idle {
+            if _recordingStatus != .idle {
                 fatalError("Already recording")
             }
             
-            self.transitionToRecordingStatus(.StartingRecording, error: nil)
+            self.transitionToRecordingStatus(.startingRecording, error: nil)
         }
         
         let recorder = MovieRecorder(URL: _recordingURL)
@@ -643,7 +653,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         recorder.addVideoTrackWithSourceFormatDescription(self.outputVideoFormatDescription!, transform:videoTransform)
         
-        let callbackQueue = dispatch_queue_create("com.apple.sample.sessionmanager.recordercallback", DISPATCH_QUEUE_SERIAL); // guarantee ordering of callbacks with a serial queue
+        let callbackQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.recordercallback", attributes: []); // guarantee ordering of callbacks with a serial queue
         recorder.setDelegate(self, callbackQueue: callbackQueue)
         self.recorder = recorder
         
@@ -652,11 +662,11 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     func stopRecording() {
         synchronized(self) {
-            if _recordingStatus != .Recording {
+            if _recordingStatus != .recording {
                 return
             }
             
-            self.transitionToRecordingStatus(.StoppingRecording, error: nil)
+            self.transitionToRecordingStatus(.stoppingRecording, error: nil)
         }
         
         self.recorder?.finishRecording() // asynchronous, will call us back with recorderDidFinishRecording: or recorder:didFailWithError: when done
@@ -664,26 +674,26 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     //MARK: MovieRecorder Delegate
     
-    func movieRecorderDidFinishPreparing(recorder: MovieRecorder) {
+    func movieRecorderDidFinishPreparing(_ recorder: MovieRecorder) {
         synchronized(self) {
-            if _recordingStatus != .StartingRecording {
+            if _recordingStatus != .startingRecording {
                 fatalError("Expected to be in StartingRecording state")
             }
             
-            self.transitionToRecordingStatus(.Recording, error: nil)
+            self.transitionToRecordingStatus(.recording, error: nil)
         }
     }
     
-    func movieRecorder(recorder: MovieRecorder, didFailWithError error: NSError) {
+    func movieRecorder(_ recorder: MovieRecorder, didFailWithError error: Error) {
         synchronized(self) {
             self.recorder = nil
-            self.transitionToRecordingStatus(.Idle, error: error)
+            self.transitionToRecordingStatus(.idle, error: error)
         }
     }
     
-    func movieRecorderDidFinishRecording(recorder: MovieRecorder) {
+    func movieRecorderDidFinishRecording(_ recorder: MovieRecorder) {
         synchronized(self) {
-            if _recordingStatus != .StoppingRecording {
+            if _recordingStatus != .stoppingRecording {
                 fatalError("Expected to be in StoppingRecording state")
             }
             
@@ -694,18 +704,18 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         self.recorder = nil
         
         let library = ALAssetsLibrary()
-        library.writeVideoAtPathToSavedPhotosAlbum(_recordingURL) {assetURL, error in
+        library.writeVideoAtPath(toSavedPhotosAlbum: _recordingURL) {assetURL, error in
             
             do {
-                try NSFileManager.defaultManager().removeItemAtURL(self._recordingURL)
+                try FileManager.default.removeItem(at: self._recordingURL)
             } catch _ {
             }
             
             synchronized(self) {
-                if self._recordingStatus != .StoppingRecording {
+                if self._recordingStatus != .stoppingRecording {
                     fatalError("Expected to be in StoppingRecording state")
                 }
-                self.transitionToRecordingStatus(.Idle, error: error)
+                self.transitionToRecordingStatus(.idle, error: error)
             }
         }
     }
@@ -713,32 +723,32 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     //MARK: Recording State Machine
     
     // call under @synchonized( self )
-    private func transitionToRecordingStatus(newStatus: VideoSnakeRecordingStatus, error: NSError?) {
-        var delegateClosure: (VideoSnakeSessionManager -> Void)? = nil
+    private func transitionToRecordingStatus(_ newStatus: VideoSnakeRecordingStatus, error: Error?) {
+        var delegateClosure: ((VideoSnakeSessionManager) -> Void)? = nil
         let oldStatus = _recordingStatus
         _recordingStatus = newStatus
         
         #if LOG_STATUS_TRANSITIONS
-            NSLog("VideoSnakeSessionManager recording state transition: %@->%@", oldStatus.toString, newStatus.toString )
+            NSLog("VideoSnakeSessionManager recording state transition: %@->%@", oldStatus.description, newStatus.description)
         #endif
         
         if newStatus != oldStatus && delegate != nil {
-            if error != nil && newStatus == .Idle {
-                delegateClosure = {manager in self.delegate!.sessionManager(manager, recordingDidFailWithError: error!)}
+            if let error = error, newStatus == .idle {
+                delegateClosure = {manager in self.delegate!.sessionManager(manager, recordingDidFailWith: error)}
             } else {
                 // only the above delegate method takes an error
-                if oldStatus == .StartingRecording && newStatus == .Recording {
+                if oldStatus == .startingRecording && newStatus == .recording {
                     delegateClosure = {manager in self.delegate!.sessionManagerRecordingDidStart(manager)}
-                } else if oldStatus == .Recording && newStatus == .StoppingRecording {
+                } else if oldStatus == .recording && newStatus == .stoppingRecording {
                     delegateClosure = {manager in self.delegate!.sessionManagerRecordingWillStop(manager)}
-                } else if oldStatus == .StoppingRecording && newStatus == .Idle {
+                } else if oldStatus == .stoppingRecording && newStatus == .idle {
                     delegateClosure = {manager in self.delegate!.sessionManagerRecordingDidStop(manager)}
                 }
             }
         }
         
         if delegateClosure != nil {
-            dispatch_async(_delegateCallbackQueue) {
+            _delegateCallbackQueue.async {
                 autoreleasepool {
                     delegateClosure!(self)
                 }
@@ -749,8 +759,8 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
     
     // Auto mirroring: Front camera is mirrored; back camera isn't
     // only valid after startRunning has been called
-    func transformFromVideoBufferOrientationToOrientation(orientation: AVCaptureVideoOrientation, withAutoMirroring mirror: Bool) -> CGAffineTransform {
-        var transform = CGAffineTransformIdentity
+    func transformFromVideoBufferOrientationToOrientation(_ orientation: AVCaptureVideoOrientation, withAutoMirroring mirror: Bool) -> CGAffineTransform {
+        var transform = CGAffineTransform.identity
         
         // Calculate offsets from an arbitrary reference orientation (portrait)
         let orientationAngleOffset = angleOffsetFromPortraitOrientationToOrientation(orientation)
@@ -758,15 +768,15 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         
         // Find the difference in angle between the desired orientation and the video orientation
         let angleOffset = orientationAngleOffset - videoOrientationAngleOffset
-        transform = CGAffineTransformMakeRotation(angleOffset)
+        transform = CGAffineTransform(rotationAngle: angleOffset)
         
-        if _videoDevice!.position == .Front {
+        if _videoDevice!.position == .front {
             if mirror {
-                transform = CGAffineTransformScale(transform, -1, 1)
+                transform = transform.scaledBy(x: -1, y: 1)
             } else {
                 let uiOrientation = UIInterfaceOrientation(rawValue: Int(orientation.rawValue))!
                 if UIInterfaceOrientationIsPortrait(uiOrientation) {
-                    transform = CGAffineTransformRotate(transform, M_PI.g)
+                    transform = transform.rotated(by: M_PI.g)
                 }
             }
         }
@@ -774,14 +784,14 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         return transform
     }
     
-    private func calculateFramerateAtTimestamp(timestamp: CMTime) {
+    private func calculateFramerateAtTimestamp(_ timestamp: CMTime) {
         _previousSecondTimestamps.append(timestamp)
         
         let oneSecond = CMTimeMake(1, 1)
         let oneSecondAgo = CMTimeSubtract(timestamp, oneSecond)
         
         while _previousSecondTimestamps[0] < oneSecondAgo {
-            _previousSecondTimestamps.removeAtIndex(0)
+            _previousSecondTimestamps.remove(at: 0)
         }
         
         if _previousSecondTimestamps.count > 1 {

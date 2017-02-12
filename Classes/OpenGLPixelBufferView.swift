@@ -93,23 +93,23 @@ class OpenGLPixelBufferView: UIView {
     private var _program: GLuint = 0
     private var _frame: GLint = 0
     
-    override class func layerClass() -> AnyClass {
+    override class var layerClass : AnyClass {
         return CAEAGLLayer.self
     }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         // Use 2x scale factor on Retina displays.
-        self.contentScaleFactor = UIScreen.mainScreen().scale
+        self.contentScaleFactor = UIScreen.main.scale
         
         // Initialize OpenGL ES 2
         let eaglLayer = self.layer as! CAEAGLLayer
-        eaglLayer.opaque = true
+        eaglLayer.isOpaque = true
         eaglLayer.drawableProperties = [
             kEAGLDrawablePropertyRetainedBacking: false,
             kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8,
         ]
-        _oglContext = EAGLContext(API: .OpenGLES2)
+        _oglContext = EAGLContext(api: .openGLES2)
         if _oglContext == nil {
             fatalError("Problem with OpenGL context.")
         }
@@ -130,7 +130,7 @@ class OpenGLPixelBufferView: UIView {
         glGenRenderbuffers(1, &_colorBufferHandle)
         glBindRenderbuffer(GL_RENDERBUFFER.ui, _colorBufferHandle)
         
-        _oglContext.renderbufferStorage(GL_RENDERBUFFER.l, fromDrawable: self.layer as! CAEAGLLayer)
+        _oglContext.renderbufferStorage(GL_RENDERBUFFER.l, from: self.layer as! CAEAGLLayer)
         
         glGetRenderbufferParameteriv(GL_RENDERBUFFER.ui, GL_RENDERBUFFER_WIDTH.ui, &_width)
         glGetRenderbufferParameteriv(GL_RENDERBUFFER.ui, GL_RENDERBUFFER_HEIGHT.ui, &_height)
@@ -178,9 +178,9 @@ class OpenGLPixelBufferView: UIView {
     }
     
     func reset() {
-        let oldContext = EAGLContext.currentContext()
+        let oldContext = EAGLContext.current()
         if oldContext !== _oglContext {
-            if !EAGLContext.setCurrentContext(_oglContext) {
+            if !EAGLContext.setCurrent(_oglContext) {
                 fatalError("Problem with OpenGL context")
             }
         }
@@ -200,7 +200,7 @@ class OpenGLPixelBufferView: UIView {
             _textureCache = nil
         }
         if oldContext !== _oglContext {
-            EAGLContext.setCurrentContext(oldContext)
+            EAGLContext.setCurrent(oldContext)
         }
     }
     
@@ -208,7 +208,7 @@ class OpenGLPixelBufferView: UIView {
         self.reset()
     }
     
-    func displayPixelBuffer(pixelBuffer: CVPixelBuffer) {
+    func displayPixelBuffer(_ pixelBuffer: CVPixelBuffer) {
         let squareVertices: [GLfloat] = [
             -1.0, -1.0, // bottom left
             1.0, -1.0, // bottom right
@@ -216,9 +216,9 @@ class OpenGLPixelBufferView: UIView {
             1.0,  1.0, // top right
         ]
         
-        let oldContext = EAGLContext.currentContext()
+        let oldContext = EAGLContext.current()
         if oldContext !== _oglContext {
-            if !EAGLContext.setCurrentContext(_oglContext) {
+            if !EAGLContext.setCurrent(_oglContext) {
                 fatalError("Problem with OpenGL context")
             }
         }
@@ -273,7 +273,7 @@ class OpenGLPixelBufferView: UIView {
         
         // Preserve aspect ratio; fill layer bounds
         var textureSamplingSize = CGSize()
-        let cropScaleAmount = CGSizeMake(self.bounds.size.width / CGFloat(frameWidth), self.bounds.size.height / CGFloat(frameHeight))
+        let cropScaleAmount = CGSize(width: self.bounds.size.width / CGFloat(frameWidth), height: self.bounds.size.height / CGFloat(frameHeight))
         if cropScaleAmount.height > cropScaleAmount.width {
             textureSamplingSize.width = self.bounds.size.width / (frameWidth.g * cropScaleAmount.height)
             textureSamplingSize.height = 1.0
@@ -303,7 +303,7 @@ class OpenGLPixelBufferView: UIView {
         glBindTexture(GL_TEXTURE_2D.ui, 0)
         
         if oldContext !== _oglContext {
-            EAGLContext.setCurrentContext(oldContext)
+            EAGLContext.setCurrent(oldContext)
         }
     }
     

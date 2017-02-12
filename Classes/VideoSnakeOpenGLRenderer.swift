@@ -61,37 +61,37 @@ private let ATTRIB_VERTEX = 0
 private let ATTRIB_TEXTUREPOSITON = 1
 private let NUM_ATTRIBUTES = 2
 
-private func CreatePixelBufferPool(width: Int32, height: Int32, pixelFormat: OSType, maxBufferCount: Int32) -> CVPixelBufferPool? {
+private func CreatePixelBufferPool(_ width: Int32, height: Int32, pixelFormat: OSType, maxBufferCount: Int32) -> CVPixelBufferPool? {
     var outputPool: CVPixelBufferPool? = nil
     
-    var sourcePixelBufferOptions: [NSObject: AnyObject] = [:]
-    sourcePixelBufferOptions[kCVPixelBufferPixelFormatTypeKey] = Int(pixelFormat)
+    var sourcePixelBufferOptions: [AnyHashable: Any] = [:]
+    sourcePixelBufferOptions[kCVPixelBufferPixelFormatTypeKey as AnyHashable] = Int(pixelFormat)
     
-    sourcePixelBufferOptions[kCVPixelBufferWidthKey] = Int(width)
+    sourcePixelBufferOptions[kCVPixelBufferWidthKey as AnyHashable] = Int(width)
     
-    sourcePixelBufferOptions[kCVPixelBufferHeightKey] = Int(height)
+    sourcePixelBufferOptions[kCVPixelBufferHeightKey as AnyHashable] = Int(height)
     
-    sourcePixelBufferOptions[kCVPixelFormatOpenGLESCompatibility] = true
+    sourcePixelBufferOptions[kCVPixelFormatOpenGLESCompatibility as AnyHashable] = true
     
-    let ioSurfaceProps: [NSObject: AnyObject] = [:]
-    sourcePixelBufferOptions[kCVPixelBufferIOSurfacePropertiesKey] = ioSurfaceProps
+    let ioSurfaceProps: [AnyHashable: Any] = [:]
+    sourcePixelBufferOptions[kCVPixelBufferIOSurfacePropertiesKey as AnyHashable] = ioSurfaceProps
     
-    let pixelBufferPoolOptions: [NSObject: AnyObject] = [
-        kCVPixelBufferPoolMinimumBufferCountKey: Int(maxBufferCount),
+    let pixelBufferPoolOptions: [AnyHashable: Any] = [
+        kCVPixelBufferPoolMinimumBufferCountKey as AnyHashable: Int(maxBufferCount),
     ]
     
-    CVPixelBufferPoolCreate(kCFAllocatorDefault, pixelBufferPoolOptions, sourcePixelBufferOptions, &outputPool)
+    CVPixelBufferPoolCreate(kCFAllocatorDefault, pixelBufferPoolOptions as CFDictionary?, sourcePixelBufferOptions as CFDictionary?, &outputPool)
     
     return outputPool
 }
 
-private func CreatePixelBufferPoolAuxAttributes(maxBufferCount: Int32) -> CFDictionary {
+private func CreatePixelBufferPoolAuxAttributes(_ maxBufferCount: Int32) -> CFDictionary {
     // CVPixelBufferPoolCreatePixelBufferWithAuxAttributes() will return kCVReturnWouldExceedAllocationThreshold if we have already vended the max number of buffers
-    let auxAttributes: [NSObject: AnyObject] = [kCVPixelBufferPoolAllocationThresholdKey: Int(maxBufferCount)]
-    return auxAttributes
+    let auxAttributes: [AnyHashable: Any] = [kCVPixelBufferPoolAllocationThresholdKey as AnyHashable: Int(maxBufferCount)]
+    return auxAttributes as CFDictionary
 }
 
-private func PreallocatePixelBuffersInPool(pool: CVPixelBufferPool, auxAttributes: CFDictionary) {
+private func PreallocatePixelBuffersInPool(_ pool: CVPixelBufferPool, auxAttributes: CFDictionary) {
     // Preallocate buffers in the pool, since this is for real-time display/capture
     var pixelBuffers: [CVPixelBuffer] = []
     while true {
@@ -127,14 +127,14 @@ class VideoSnakeOpenGLRenderer: NSObject {
     // Snake effect
     private var _velocityDeltaX: Double = 0.0
     private var _velocityDeltaY: Double = 0.0
-    private var _lastMotionTime: NSTimeInterval = 0.0
+    private var _lastMotionTime: TimeInterval = 0.0
     
-    class func readFile(name: String) -> String? {
+    class func readFile(_ name: String) -> String? {
         
-        let path = NSBundle.mainBundle().pathForResource(name, ofType: nil)
+        let path = Bundle.main.path(forResource: name, ofType: nil)
         let source: String?
         do {
-            source = try String(contentsOfFile: path!, encoding: NSUTF8StringEncoding)
+            source = try String(contentsOfFile: path!, encoding: String.Encoding.utf8)
         } catch _ {
             source = nil
         }
@@ -143,7 +143,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
     
     override init() {
         super.init()
-        self._oglContext = EAGLContext(API: .OpenGLES2)
+        self._oglContext = EAGLContext(api: .openGLES2)
         if self._oglContext == nil {
             fatalError("Problem with OpenGL context.")
         }
@@ -153,19 +153,19 @@ class VideoSnakeOpenGLRenderer: NSObject {
         self.deleteBuffers()
     }
     
-    func prepareWithOutputDimensions(outputDimensions: CMVideoDimensions, retainedBufferCountHint: size_t) {
+    func prepareWithOutputDimensions(_ outputDimensions: CMVideoDimensions, retainedBufferCountHint: size_t) {
         self.deleteBuffers()
         if !self.initializeBuffersWithOutputDimensions(outputDimensions, retainedBufferCountHint:retainedBufferCountHint) {
             fatalError("Problem preparing renderer.")
         }
     }
     
-    private func initializeBuffersWithOutputDimensions(outputDimensions: CMVideoDimensions, retainedBufferCountHint clientRetainedBufferCountHint: size_t) -> Bool {
+    private func initializeBuffersWithOutputDimensions(_ outputDimensions: CMVideoDimensions, retainedBufferCountHint clientRetainedBufferCountHint: size_t) -> Bool {
         var success = true
         
-        let oldContext = EAGLContext.currentContext()
+        let oldContext = EAGLContext.current()
         if oldContext !== _oglContext {
-            if !EAGLContext.setCurrentContext(_oglContext) {
+            if !EAGLContext.setCurrent(_oglContext) {
                 fatalError("Problem with OpenGL context")
             }
         }
@@ -242,7 +242,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
             self.deleteBuffers()
         }
         if oldContext !== _oglContext {
-            EAGLContext.setCurrentContext(oldContext)
+            EAGLContext.setCurrent(oldContext)
         }
         return success
     }
@@ -252,9 +252,9 @@ class VideoSnakeOpenGLRenderer: NSObject {
     }
     
     private func deleteBuffers() {
-        let oldContext = EAGLContext.currentContext()
+        let oldContext = EAGLContext.current()
         if oldContext !== _oglContext {
-            if !EAGLContext.setCurrentContext(_oglContext) {
+            if !EAGLContext.setCurrent(_oglContext) {
                 fatalError("Problem with OpenGL context")
             }
         }
@@ -285,11 +285,11 @@ class VideoSnakeOpenGLRenderer: NSObject {
             outputFormatDescription = nil
         }
         if oldContext !== _oglContext {
-            EAGLContext.setCurrentContext(oldContext)
+            EAGLContext.setCurrent(oldContext)
         }
     }
     
-    func copyRenderedPixelBuffer(pixelBuffer: CVPixelBuffer, motion: CMDeviceMotion?) -> CVPixelBuffer? {
+    func copyRenderedPixelBuffer(_ pixelBuffer: CVPixelBuffer, motion: CMDeviceMotion?) -> CVPixelBuffer? {
         let kBlackUniform: [Float] = [0.0, 0.0, 0.0, 1.0]
         let squareVertices: [GLfloat] = [
             -1.0, -1.0, // bottom left
@@ -324,9 +324,9 @@ class VideoSnakeOpenGLRenderer: NSObject {
             fatalError("Invalid pixel buffer format")
         }
         
-        let oldContext = EAGLContext.currentContext()
+        let oldContext = EAGLContext.current()
         if oldContext != _oglContext {
-            if !EAGLContext.setCurrentContext(_oglContext) {
+            if !EAGLContext.setCurrent(_oglContext) {
                 fatalError("Problem with OpenGL context")
             }
         }
@@ -411,8 +411,8 @@ class VideoSnakeOpenGLRenderer: NSObject {
             glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_T.ui, GL_CLAMP_TO_EDGE)
             glFramebufferTexture2D(GL_FRAMEBUFFER.ui, GL_COLOR_ATTACHMENT0.ui, CVOpenGLESTextureGetTarget(dstTexture!), CVOpenGLESTextureGetName(dstTexture!), 0)
             
-            var modelview: [Float] = Array(count: 16, repeatedValue: 0.0)
-            var projection: [Float] = Array(count: 16, repeatedValue: 0.0)
+            var modelview: [Float] = Array(repeating: 0.0, count: 16)
+            var projection: [Float] = Array(repeating: 0.0, count: 16)
             
             // setup projection matrix
             mat4f.LoadIdentity(&projection)
@@ -452,10 +452,10 @@ class VideoSnakeOpenGLRenderer: NSObject {
                 glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_S.ui, GL_CLAMP_TO_EDGE)
                 glTexParameteri(GL_TEXTURE_2D.ui, GL_TEXTURE_WRAP_T.ui, GL_CLAMP_TO_EDGE)
                 
-                var translation: [Float] = Array(count: 16, repeatedValue: 0.0)
+                var translation: [Float] = Array(repeating: 0.0, count: 16)
                 mat4f.LoadTranslation(transBack, &translation)
                 
-                var scaling: [Float] = Array(count: 16, repeatedValue: 0.0)
+                var scaling: [Float] = Array(repeating: 0.0, count: 16)
                 mat4f.LoadScale(scaleBack, &scaling)
                 
                 mat4f.MultiplyMat4f(translation, scaling, &modelview)
@@ -512,7 +512,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
             
         } while false
         if oldContext !== _oglContext {
-            EAGLContext.setCurrentContext(oldContext)
+            EAGLContext.setCurrent(oldContext)
         }
         return dstPixelBuffer
     }

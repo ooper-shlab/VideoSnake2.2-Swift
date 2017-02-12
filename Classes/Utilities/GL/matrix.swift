@@ -61,7 +61,7 @@
 */
 
 struct mat4f {
-    static func LoadIdentity(m: UnsafeMutablePointer<Float>) {
+    static func LoadIdentity(_ m: UnsafeMutablePointer<Float>) {
         m[0] = 1.0
         m[1] = 0.0
         m[2] = 0.0
@@ -84,7 +84,7 @@ struct mat4f {
     }
     
     // s is a 3D vector
-    static func LoadScale(s: UnsafePointer<Float>, _ m: UnsafeMutablePointer<Float>) {
+    static func LoadScale(_ s: UnsafePointer<Float>, _ m: UnsafeMutablePointer<Float>) {
         m[0] = s[0]
         m[1] = 0.0
         m[2] = 0.0
@@ -107,7 +107,7 @@ struct mat4f {
     }
     
     // v is a 3D vector
-    static func LoadTranslation(v: UnsafePointer<Float>, _ mout: UnsafeMutablePointer<Float>) {
+    static func LoadTranslation(_ v: UnsafePointer<Float>, _ mout: UnsafeMutablePointer<Float>) {
         mout[0] = 1.0
         mout[1] = 0.0
         mout[2] = 0.0
@@ -129,7 +129,7 @@ struct mat4f {
         mout[15] = 1.0
     }
     
-    static func MultiplyMat4f(a: UnsafePointer<Float>, _ b: UnsafePointer<Float>, _ mout: UnsafeMutablePointer<Float>) {
+    static func MultiplyMat4f(_ a: UnsafePointer<Float>, _ b: UnsafePointer<Float>, _ mout: UnsafeMutablePointer<Float>) {
         mout[0]  = a[0] * b[0]  + a[4] * b[1]  + a[8] * b[2]   + a[12] * b[3]
         mout[1]  = a[1] * b[0]  + a[5] * b[1]  + a[9] * b[2]   + a[13] * b[3]
         mout[2]  = a[2] * b[0]  + a[6] * b[1]  + a[10] * b[2]  + a[14] * b[3]
