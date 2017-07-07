@@ -13,7 +13,7 @@ You should not contact to Apple or SHLab(jp) about any faults caused by my trans
 ===========================================================================
 BUILD REQUIREMENTS:
 
-Xcode 8.2.1, iOS SDK 10
+Xcode 8.3.3, iOS SDK 10
 
 ===========================================================================
 Some common utility files are not fully translated. Their license terms are kept there just to indicate the original files.

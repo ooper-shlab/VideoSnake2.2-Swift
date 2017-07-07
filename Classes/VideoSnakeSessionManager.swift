@@ -85,11 +85,11 @@ private func angleOffsetFromPortraitOrientationToOrientation(_ orientation: AVCa
     case .portrait:
         angle = 0.0
     case .portraitUpsideDown:
-        angle = M_PI.g
+        angle = .pi
     case .landscapeRight:
-        angle = -M_PI_2.g
+        angle = -(CGFloat.pi/2)
     case .landscapeLeft:
-        angle = M_PI_2.g
+        angle = .pi/2
     }
     
     return angle
@@ -151,8 +151,10 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
         // In this app we start with VideoDataOutput frames on a high priority queue, and downstream consumers use default priority queues.
         // Audio uses a default priority queue because we aren't monitoring it live and just want to get it into the movie.
         // AudioDataOutput can tolerate more latency than VideoDataOutput as its buffers aren't allocated out of a fixed size pool.
-        _videoDataOutputQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.video")
-        _videoDataOutputQueue.setTarget(queue: DispatchQueue.global(qos: .userInteractive))
+        //###Causes runtime error on iPhone 7+/iOS 10.3.2
+        //_videoDataOutputQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.video")
+        //_videoDataOutputQueue.setTarget(queue: DispatchQueue.global(qos: .userInteractive))
+        _videoDataOutputQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.video", qos: .userInteractive)
         
         motionSynchronizer = MotionSynchronizer()
         _motionSyncedVideoQueue = DispatchQueue(label: "com.apple.sample.sessionmanager.motion")
@@ -734,7 +736,7 @@ class VideoSnakeSessionManager: NSObject, AVCaptureAudioDataOutputSampleBufferDe
             } else {
                 let uiOrientation = UIInterfaceOrientation(rawValue: Int(orientation.rawValue))!
                 if UIInterfaceOrientationIsPortrait(uiOrientation) {
-                    transform = transform.rotated(by: M_PI.g)
+                    transform = transform.rotated(by: .pi)
                 }
             }
         }

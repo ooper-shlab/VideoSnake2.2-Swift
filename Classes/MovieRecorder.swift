@@ -390,11 +390,11 @@ class MovieRecorder: NSObject {
     private func setupAssetWriterAudioInput(_ audioFormatDescription: CMFormatDescription) throws {
         let supportsFormatHint = AVAssetWriterInput.instancesRespond(to: #selector(AVAssetWriterInput.init(mediaType:outputSettings:sourceFormatHint:))) // supported on iOS 6 and later
         
-        let audioCompressionSettings: [String : AnyObject]
+        let audioCompressionSettings: [String : Any]
         
         if supportsFormatHint {
             audioCompressionSettings = [
-                AVFormatIDKey: kAudioFormatMPEG4AAC.l as AnyObject,
+                AVFormatIDKey: kAudioFormatMPEG4AAC.l,
             ]
         } else {
             let currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(audioFormatDescription)
@@ -410,11 +410,11 @@ class MovieRecorder: NSObject {
                 currentChannelLayoutData = Data()
             }
             audioCompressionSettings = [
-                AVFormatIDKey: kAudioFormatMPEG4AAC.l as AnyObject,
-                AVSampleRateKey: currentASBD!.pointee.mSampleRate as AnyObject,
-                AVEncoderBitRatePerChannelKey: 64000 as AnyObject,
-                AVNumberOfChannelsKey: Int(currentASBD!.pointee.mChannelsPerFrame) as AnyObject,
-                AVChannelLayoutKey: currentChannelLayoutData as AnyObject,
+                AVFormatIDKey: kAudioFormatMPEG4AAC.l,
+                AVSampleRateKey: currentASBD!.pointee.mSampleRate,
+                AVEncoderBitRatePerChannelKey: 64000,
+                AVNumberOfChannelsKey: Int(currentASBD!.pointee.mChannelsPerFrame),
+                AVChannelLayoutKey: currentChannelLayoutData,
             ]
         }
         if _assetWriter?.canApply(outputSettings: audioCompressionSettings, forMediaType: AVMediaTypeAudio) ?? false {
@@ -458,8 +458,8 @@ class MovieRecorder: NSObject {
         
         let videoCompressionSettings: [String : Any] = [
             AVVideoCodecKey: AVVideoCodecH264,
-            AVVideoWidthKey: Int(dimensions.width),
-            AVVideoHeightKey: Int(dimensions.height),
+            AVVideoWidthKey: dimensions.width,
+            AVVideoHeightKey: dimensions.height,
             AVVideoCompressionPropertiesKey: compressionProperties,
         ]
         

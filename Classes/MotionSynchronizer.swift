@@ -130,7 +130,7 @@ class MotionSynchronizer: NSObject {
             let mediaTimeDict = CMGetAttachment(mediaSample, VIDEOSNAKE_REMAPPED_PTS as CFString, nil) as! CFDictionary?
             let mediaTime = (mediaTimeDict != nil) ? CMTimeMakeFromDictionary(mediaTimeDict!) : CMSampleBufferGetPresentationTimeStamp(mediaSample)
             let mediaTimeSeconds = CMTimeGetSeconds(mediaTime)
-            var closestDifference = DBL_MAX
+            var closestDifference = Double.greatestFiniteMagnitude
             var closestMotionIndex = 0
             
             for motionIndex in 0..<self.motionSamples.count {
