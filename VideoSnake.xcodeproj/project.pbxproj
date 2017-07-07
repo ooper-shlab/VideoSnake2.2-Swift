@@ -258,7 +258,6 @@
 				TargetAttributes = {
 					6F90DDD41395CAAA00125BDA = {
 						CreatedOnToolsVersion = 8.0;
-						DevelopmentTeam = D9ACCH3T4Y;
 						LastSwiftMigration = 0820;
 					};
 				};
@@ -436,7 +435,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = D9ACCH3T4Y;
+				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VideoSnake-Prefix.pch";
 				INFOPLIST_FILE = "VideoSnake-Info.plist";
@@ -459,7 +458,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = D9ACCH3T4Y;
+				DEVELOPMENT_TEAM = "";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VideoSnake-Prefix.pch";
 				INFOPLIST_FILE = "VideoSnake-Info.plist";
