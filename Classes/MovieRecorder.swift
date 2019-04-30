@@ -171,7 +171,7 @@ class MovieRecorder: NSObject {
                 } catch _ {}
                 
                 do {
-                    self._assetWriter = try AVAssetWriter(outputURL: self._URL, fileType: AVFileTypeQuickTimeMovie)
+                    self._assetWriter = try AVAssetWriter(outputURL: self._URL, fileType: .mov)
                     
                     // Create and add inputs
                     if let videoFormat =  self._videoTrackSourceFormatDescription {
@@ -202,20 +202,20 @@ class MovieRecorder: NSObject {
     }
     
     func appendVideoSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        self.appendSampleBuffer(sampleBuffer, ofMediaType: AVMediaTypeVideo)
+        self.appendSampleBuffer(sampleBuffer, of: .video)
     }
     
     func appendVideoPixelBuffer(_ pixelBuffer: CVPixelBuffer, withPresentationTime presentationTime: CMTime) {
         var sampleBuffer: CMSampleBuffer? = nil
         
         var timingInfo: CMSampleTimingInfo = CMSampleTimingInfo()
-        timingInfo.duration = kCMTimeInvalid
-        timingInfo.decodeTimeStamp = kCMTimeInvalid
+        timingInfo.duration = .invalid
+        timingInfo.decodeTimeStamp = .invalid
         timingInfo.presentationTimeStamp = presentationTime
         
-        let err = CMSampleBufferCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, true, nil, nil, _videoTrackSourceFormatDescription!, &timingInfo, &sampleBuffer)
+        let err = CMSampleBufferCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pixelBuffer, dataReady: true, makeDataReadyCallback: nil, refcon: nil, formatDescription: _videoTrackSourceFormatDescription!, sampleTiming: &timingInfo, sampleBufferOut: &sampleBuffer)
         if sampleBuffer != nil {
-            self.appendSampleBuffer(sampleBuffer!, ofMediaType: AVMediaTypeVideo)
+            self.appendSampleBuffer(sampleBuffer!, of: .video)
         } else {
             let exceptionReason = "sample buffer create failed (\(err))"
             fatalError(exceptionReason)
@@ -223,7 +223,7 @@ class MovieRecorder: NSObject {
     }
     
     func appendAudioSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
-        self.appendSampleBuffer(sampleBuffer, ofMediaType: AVMediaTypeAudio)
+        self.appendSampleBuffer(sampleBuffer, of: .audio)
     }
     
     // Asynchronous, might take several hundred milliseconds. When finished the delegate's recorderDidFinishRecording: or recorder:didFailWithError: method will be called.
@@ -289,7 +289,7 @@ class MovieRecorder: NSObject {
     //MARK: -
     //MARK: Internal
     
-    private func appendSampleBuffer(_ sampleBuffer: CMSampleBuffer, ofMediaType mediaType: String) {
+    private func appendSampleBuffer(_ sampleBuffer: CMSampleBuffer, of mediaType: AVMediaType) {
         
         synchronized(self) {
             if _status.rawValue < MovieRecorderStatus.recording.rawValue {
@@ -314,7 +314,7 @@ class MovieRecorder: NSObject {
                     self._haveStartedSession = true
                 }
                 
-                let input = (mediaType == AVMediaTypeVideo) ? self._videoInput : self._audioInput
+                let input = (mediaType == .video) ? self._videoInput : self._audioInput
                 
                 if input?.isReadyForMoreMediaData ?? false {
                     let success = input!.append(sampleBuffer)
@@ -325,7 +325,7 @@ class MovieRecorder: NSObject {
                         }
                     }
                 } else {
-                    NSLog("%@ input not ready for more media data, dropping buffer", mediaType)
+                    NSLog("%@ input not ready for more media data, dropping buffer", mediaType.rawValue)
                 }
             }
         }
@@ -400,7 +400,7 @@ class MovieRecorder: NSObject {
             let currentASBD = CMAudioFormatDescriptionGetStreamBasicDescription(audioFormatDescription)
             
             var aclSize: size_t = 0
-            let currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(audioFormatDescription, &aclSize)
+            let currentChannelLayout = CMAudioFormatDescriptionGetChannelLayout(audioFormatDescription, sizeOut: &aclSize)
             let currentChannelLayoutData: Data
             
             // AVChannelLayoutKey must be specified, but if we don't know any better give an empty data and let AVAssetWriter decide.
@@ -417,11 +417,11 @@ class MovieRecorder: NSObject {
                 AVChannelLayoutKey: currentChannelLayoutData,
             ]
         }
-        if _assetWriter?.canApply(outputSettings: audioCompressionSettings, forMediaType: AVMediaTypeAudio) ?? false {
+        if _assetWriter?.canApply(outputSettings: audioCompressionSettings, forMediaType: .audio) ?? false {
             if supportsFormatHint {
-                _audioInput = AVAssetWriterInput(mediaType: AVMediaTypeAudio, outputSettings: audioCompressionSettings, sourceFormatHint: audioFormatDescription)
+                _audioInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioCompressionSettings, sourceFormatHint: audioFormatDescription)
             } else {
-                _audioInput = AVAssetWriterInput(mediaType: AVMediaTypeAudio, outputSettings: audioCompressionSettings)
+                _audioInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioCompressionSettings)
             }
             _audioInput!.expectsMediaDataInRealTime = true
             if _assetWriter?.canAdd(_audioInput!) ?? false {
@@ -463,11 +463,11 @@ class MovieRecorder: NSObject {
             AVVideoCompressionPropertiesKey: compressionProperties,
         ]
         
-        if _assetWriter?.canApply(outputSettings: videoCompressionSettings, forMediaType: AVMediaTypeVideo) ?? false {
+        if _assetWriter?.canApply(outputSettings: videoCompressionSettings, forMediaType: .video) ?? false {
             if supportsFormatHint {
-                _videoInput = AVAssetWriterInput(mediaType: AVMediaTypeVideo, outputSettings: videoCompressionSettings, sourceFormatHint: videoFormatDescription)
+                _videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoCompressionSettings, sourceFormatHint: videoFormatDescription)
             } else {
-                _videoInput = AVAssetWriterInput(mediaType: AVMediaTypeVideo, outputSettings: videoCompressionSettings)
+                _videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoCompressionSettings)
             }
             _videoInput!.expectsMediaDataInRealTime = true
             _videoInput!.transform = transform
@@ -484,7 +484,7 @@ class MovieRecorder: NSObject {
     private class func cannotSetupInputError() -> Error {
         let localizedDescription = NSLocalizedString("Recording cannot be started", comment: "")
         let localizedFailureReason = NSLocalizedString("Cannot setup asset writer input.", comment: "")
-        let errorDict: [AnyHashable: Any] = [NSLocalizedDescriptionKey : localizedDescription,
+        let errorDict: [String: Any] = [NSLocalizedDescriptionKey : localizedDescription,
             NSLocalizedFailureReasonErrorKey: localizedFailureReason]
         return NSError(domain: "com.apple.dts.samplecode", code: 0, userInfo: errorDict)
     }

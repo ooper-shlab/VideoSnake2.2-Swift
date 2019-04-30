@@ -31,9 +31,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string></string>
+	<string>This app uses Camera</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app may store recorded video into your Photo Library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string></string>
+	<string>This app may access your Photo Library</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
 	<key>UIPrerenderedIcon</key>

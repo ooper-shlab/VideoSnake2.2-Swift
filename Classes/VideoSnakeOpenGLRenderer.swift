@@ -191,7 +191,7 @@ class VideoSnakeOpenGLRenderer: NSObject {
                 success = false
                 break bail
             }
-            CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, testPixelBuffer!, &outputFormatDescription)
+            CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: testPixelBuffer!, formatDescriptionOut: &outputFormatDescription)
             self.outputFormatDescription = outputFormatDescription
             testPixelBuffer = nil
             

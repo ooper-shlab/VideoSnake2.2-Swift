@@ -21,7 +21,7 @@ import AVFoundation
 class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelegate {
     private var _addedObservers: Bool = false
     private var _recording: Bool = false
-    private var _backgroundRecordingID: UIBackgroundTaskIdentifier = 0
+    private var _backgroundRecordingID: UIBackgroundTaskIdentifier = UIBackgroundTaskIdentifier(rawValue: 0)
     private var _allowedToUseGPU: Bool = false
     
     @IBOutlet private var recordButton: UIBarButtonItem!
@@ -33,9 +33,9 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
     
     deinit {
         if _addedObservers {
-            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationDidEnterBackground, object: UIApplication.shared)
-            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIApplicationWillEnterForeground, object: UIApplication.shared)
-            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIDeviceOrientationDidChange, object: UIApplication.shared)
+            NotificationCenter.default.removeObserver(self, name: UIApplication.didEnterBackgroundNotification, object: UIApplication.shared)
+            NotificationCenter.default.removeObserver(self, name: UIApplication.willEnterForegroundNotification, object: UIApplication.shared)
+            NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: UIApplication.shared)
             UIDevice.current.endGeneratingDeviceOrientationNotifications()
         }
         
@@ -43,7 +43,7 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
     
     //MARK: - View lifecycle
     
-    func applicationDidEnterBackground() {
+    @objc func applicationDidEnterBackground() {
         // Avoid using the GPU in the background
         _allowedToUseGPU = false
         self.videoSnakeSessionManager.renderingEnabled = false
@@ -54,7 +54,7 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
         self.previewView?.reset()
     }
     
-    func applicationWillEnterForeground() {
+    @objc func applicationWillEnterForeground() {
         _allowedToUseGPU = true
         self.videoSnakeSessionManager.renderingEnabled = true
     }
@@ -65,15 +65,15 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
         
         NotificationCenter.default.addObserver(self,
             selector: #selector(VideoSnakeViewController.applicationDidEnterBackground),
-            name: NSNotification.Name.UIApplicationDidEnterBackground,
+            name: UIApplication.didEnterBackgroundNotification,
             object: UIApplication.shared)
         NotificationCenter.default.addObserver(self,
             selector: #selector(VideoSnakeViewController.applicationWillEnterForeground),
-            name: NSNotification.Name.UIApplicationWillEnterForeground,
+            name: UIApplication.willEnterForegroundNotification,
             object: UIApplication.shared)
         NotificationCenter.default.addObserver(self,
             selector: #selector(VideoSnakeViewController.deviceOrientationDidChange),
-            name: NSNotification.Name.UIDeviceOrientationDidChange,
+            name: UIDevice.orientationDidChangeNotification,
             object: UIDevice.current)
         
         // Keep track of changes to the device orientation so we can update the session manager
@@ -142,7 +142,7 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
         UIApplication.shared.isIdleTimerDisabled = false
         
         UIApplication.shared.endBackgroundTask(_backgroundRecordingID)
-        _backgroundRecordingID = UIBackgroundTaskInvalid
+        _backgroundRecordingID = .invalid
     }
     
     private func setupPreviewView() {
@@ -160,16 +160,16 @@ class VideoSnakeViewController: UIViewController, VideoSnakeSessionManagerDelega
         self.previewView!.center = CGPoint(x: self.view.bounds.size.width/2.0, y: self.view.bounds.size.height/2.0)
     }
     
-    func deviceOrientationDidChange() {
+    @objc func deviceOrientationDidChange() {
         let deviceOrientation = UIDevice.current.orientation
         
         // Update recording orientation if device changes to portrait or landscape orientation (but not face up/down)
-        if UIDeviceOrientationIsPortrait(deviceOrientation) || UIDeviceOrientationIsLandscape(deviceOrientation) {
+        if deviceOrientation.isPortrait || deviceOrientation.isLandscape {
             self.videoSnakeSessionManager.recordingOrientation = AVCaptureVideoOrientation(rawValue: deviceOrientation.rawValue)!
         }
     }
     
-    func updateLabels() {
+    @objc func updateLabels() {
         let frameRateString = String(format: "%d FPS", Int(round(self.videoSnakeSessionManager.videoFrameRate)))
         self.framerateLabel.text = frameRateString
         
