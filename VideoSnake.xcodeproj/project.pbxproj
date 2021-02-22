@@ -23,7 +23,6 @@
 		6F90DDDE1395CAAA00125BDA /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DDDD1395CAAA00125BDA /* CoreGraphics.framework */; };
 		6F90DDE41395CAAA00125BDA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 6F90DDE21395CAAA00125BDA /* InfoPlist.strings */; };
 		6F90DDFF1395CCB600125BDA /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DDFE1395CCB600125BDA /* AVFoundation.framework */; };
-		6F90DE011395CCBE00125BDA /* AssetsLibrary.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DE001395CCBE00125BDA /* AssetsLibrary.framework */; };
 		6F90DE051395CCD100125BDA /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DE041395CCD100125BDA /* OpenGLES.framework */; };
 		6F90DE071395CCE000125BDA /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DE061395CCE000125BDA /* CoreVideo.framework */; };
 		6F90DE091395CCEA00125BDA /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F90DE081395CCEA00125BDA /* QuartzCore.framework */; };
@@ -40,6 +39,7 @@
 		D7DA9A0C1E50461F00F9C60B /* MotionSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A091E50461F00F9C60B /* MotionSynchronizer.swift */; };
 		D7DA9A0D1E50461F00F9C60B /* MovieRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A0A1E50461F00F9C60B /* MovieRecorder.swift */; };
 		D7DA9A0E1E50461F00F9C60B /* OpenGLPixelBufferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DA9A0B1E50461F00F9C60B /* OpenGLPixelBufferView.swift */; };
+		D7E62D2C25E3C33C0049FDBF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7E62D2B25E3C33C0049FDBF /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -87,6 +87,7 @@
 		D7DA9A091E50461F00F9C60B /* MotionSynchronizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MotionSynchronizer.swift; sourceTree = "<group>"; };
 		D7DA9A0A1E50461F00F9C60B /* MovieRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MovieRecorder.swift; sourceTree = "<group>"; };
 		D7DA9A0B1E50461F00F9C60B /* OpenGLPixelBufferView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OpenGLPixelBufferView.swift; sourceTree = "<group>"; };
+		D7E62D2B25E3C33C0049FDBF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,7 +102,6 @@
 				6F90DE071395CCE000125BDA /* CoreVideo.framework in Frameworks */,
 				6F90DDDE1395CAAA00125BDA /* CoreGraphics.framework in Frameworks */,
 				6F90DE051395CCD100125BDA /* OpenGLES.framework in Frameworks */,
-				6F90DE011395CCBE00125BDA /* AssetsLibrary.framework in Frameworks */,
 				6F90DDFF1395CCB600125BDA /* AVFoundation.framework in Frameworks */,
 				6F90DDDA1395CAAA00125BDA /* UIKit.framework in Frameworks */,
 				6F90DDDC1395CAAA00125BDA /* Foundation.framework in Frameworks */,
@@ -177,6 +177,7 @@
 			children = (
 				7214DBCD182AEF8900EA3F99 /* Images.xcassets */,
 				281FB47D176694640071511D /* Main.storyboard */,
+				D7E62D2B25E3C33C0049FDBF /* LaunchScreen.storyboard */,
 				262D247E17177837000E1DBA /* Shaders */,
 				6F90DDE11395CAAA00125BDA /* VideoSnake-Info.plist */,
 				6F90DDE21395CAAA00125BDA /* InfoPlist.strings */,
@@ -254,7 +255,7 @@
 		6F90DDCC1395CAAA00125BDA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1240;
 				TargetAttributes = {
 					6F90DDD41395CAAA00125BDA = {
 						CreatedOnToolsVersion = 8.0;
@@ -294,6 +295,7 @@
 				1B81139D1589643A00635C77 /* PhoneIcon@2x.png in Resources */,
 				1B8113A11589647F00635C77 /* PadIcon.png in Resources */,
 				7214DBCE182AEF8900EA3F99 /* Images.xcassets in Resources */,
+				D7E62D2C25E3C33C0049FDBF /* LaunchScreen.storyboard in Resources */,
 				1B8113A31589648300635C77 /* PadIcon@2x.png in Resources */,
 				261910B7160BD78F00929860 /* Default-568h@2x~iphone.png in Resources */,
 			);
@@ -361,6 +363,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -388,7 +391,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				ONLY_ACTIVE_ARCH = YES;
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -416,6 +419,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -435,7 +439,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
 				PROVISIONING_PROFILE = "";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -451,7 +455,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -459,7 +462,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VideoSnake-Prefix.pch";
 				INFOPLIST_FILE = "VideoSnake-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.VideoSnake";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -476,7 +479,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -484,7 +486,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "VideoSnake-Prefix.pch";
 				INFOPLIST_FILE = "VideoSnake-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.example.apple-samplecode.VideoSnake";
 				PRODUCT_NAME = "$(TARGET_NAME)";
